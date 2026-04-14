@@ -95,14 +95,26 @@ export async function runProject(projectDir) {
 
   // Trigger flow analysis in parallel (don't block the runner)
   store.setProjectDir(workDir);
-  analyzeFlows(workDir)
-    .then((program) => {
-      store.setProgram(program);
-      broadcast('log', { line: 'Flow analysis complete. Onboarding program ready.\n', stream: 'stdout' });
-    })
-    .catch((err) => {
-      broadcast('log', { line: `Flow analysis error: ${err.message}\n`, stream: 'stderr' });
-    });
+
+  // Skip Opus call if we already have a cached program (saves credits)
+  if (store.getProgram()) {
+    console.log('[runner] Program already loaded (cached), skipping Opus analysis');
+    broadcast('program', { program: store.getProgram() });
+    broadcast('status', { state: 'running', message: 'App running. Program loaded from cache.' });
+  } else {
+    console.log('[runner] No cached program, starting Opus analysis...');
+    analyzeFlows(workDir)
+      .then((program) => {
+        store.setProgram(program);
+        broadcast('program', { program });
+        broadcast('log', { line: 'Flow analysis complete. Onboarding program ready.\n', stream: 'stdout' });
+      })
+      .catch((err) => {
+        console.error('[runner] Flow analysis error:', err.message);
+        broadcast('log', { line: `Flow analysis error: ${err.message}\n`, stream: 'stderr' });
+        // Don't broadcast error status — keep the app running state
+      });
+  }
 }
 
 export function stopProject() {
