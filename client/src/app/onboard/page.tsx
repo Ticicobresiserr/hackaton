@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Send, Bot, ExternalLink, User, Mountain } from 'lucide-react';
 import type { OnboardingProgram } from '@/hooks/useSSE';
 import { useSSE } from '@/hooks/useSSE';
 
@@ -83,7 +85,6 @@ export default function OnboardPage() {
                   const last = updated[updated.length - 1];
                   if (last && last.role === 'assistant') {
                     const raw = last.content + data.content;
-                    // Filter out all internal markers
                     const clean = raw
                       .replace(/===STEP_COMPLETE===/g, '')
                       .replace(/===FLOW_COMPLETE===/g, '')
@@ -125,11 +126,20 @@ export default function OnboardPage() {
 
   if (!program) {
     return (
-      <main className="min-h-screen p-6 md:p-10 max-w-6xl mx-auto">
-        <h1 className="text-2xl font-bold text-white mb-2">Onboarding</h1>
-        <p className="text-gray-400">
-          No onboarding program available. Upload and analyze a repo first, then publish the program.
-        </p>
+      <main className="min-h-screen flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center max-w-md px-6"
+        >
+          <div className="w-16 h-16 rounded-2xl bg-surface-elevated border border-surface-border flex items-center justify-center mx-auto mb-5">
+            <Mountain className="w-7 h-7 text-gray-500" />
+          </div>
+          <h2 className="text-xl font-bold text-white mb-2">No onboarding available</h2>
+          <p className="text-gray-500 text-sm leading-relaxed">
+            Upload and analyze a repo first, then publish the program.
+          </p>
+        </motion.div>
       </main>
     );
   }
@@ -137,10 +147,20 @@ export default function OnboardPage() {
   if (!started) {
     return (
       <main className="min-h-screen flex items-center justify-center">
-        <div className="rounded-xl border border-gray-700 bg-gray-900/50 p-8 max-w-md w-full mx-4">
-          <h1 className="text-2xl font-bold text-white mb-2">Welcome to {program.platformName}</h1>
-          <p className="text-gray-400 text-sm mb-6">
-            {program.platformDescription}. Let&apos;s get you up to speed with a guided onboarding.
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: 'spring', damping: 20 }}
+          className="rounded-2xl border border-surface-border bg-surface-elevated/80 p-8 max-w-md w-full mx-4 border-glow-sherpa"
+        >
+          <div className="w-12 h-12 rounded-xl bg-sherpa-500/10 flex items-center justify-center mb-5">
+            <Mountain className="w-6 h-6 text-sherpa-400" />
+          </div>
+          <h1 className="text-2xl font-bold text-white mb-2">
+            Welcome to {program.platformName}
+          </h1>
+          <p className="text-gray-400 text-sm mb-8 leading-relaxed">
+            {program.platformDescription}. Your AI guide will walk you through every feature step by step.
           </p>
           <label className="block text-sm font-medium text-gray-300 mb-2">Your name</label>
           <input
@@ -149,22 +169,23 @@ export default function OnboardPage() {
             onChange={(e) => setUserName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleStart()}
             placeholder="Enter your name..."
-            className="w-full rounded-lg bg-gray-800 border border-gray-600 px-3 py-2 text-sm text-gray-100
-              placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+            className="w-full rounded-xl bg-surface-card border border-surface-border px-4 py-3 text-sm text-gray-100
+              placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-sherpa-500/40 focus:border-sherpa-500/30 mb-5 transition-all"
           />
           <button
             onClick={handleStart}
             disabled={!userName.trim()}
-            className="w-full rounded-lg bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700
-              disabled:cursor-not-allowed px-4 py-2.5 text-sm font-semibold text-white
-              transition-colors duration-150"
+            className="w-full rounded-xl bg-gradient-to-r from-sherpa-500 to-sherpa-600
+              hover:from-sherpa-400 hover:to-sherpa-500 disabled:from-gray-700 disabled:to-gray-700
+              disabled:cursor-not-allowed px-4 py-3 text-sm font-semibold text-white
+              transition-all duration-200 shadow-lg shadow-sherpa-500/20 disabled:shadow-none"
           >
             Start Onboarding
           </button>
-          <p className="text-xs text-gray-600 mt-3 text-center">
-            {program.flows.length} flows, {program.flows.reduce((s, f) => s + f.steps.length, 0)} steps
+          <p className="text-xs text-gray-600 mt-4 text-center">
+            {program.flows.length} flows &middot; {program.flows.reduce((s, f) => s + f.steps.length, 0)} steps
           </p>
-        </div>
+        </motion.div>
       </main>
     );
   }
@@ -181,22 +202,25 @@ export default function OnboardPage() {
     ? currentFlow.steps[progress?.currentStepIndex ?? 0]
     : null;
 
+  const isComplete = progress && progress.currentFlowIndex >= program.flows.length;
+
   return (
     <main className="h-[calc(100vh-56px)] flex">
-      {/* Left: iframe with running app */}
-      <div className="flex-1 flex flex-col border-r border-gray-800">
-        <div className="px-4 py-2 border-b border-gray-800 bg-gray-900/50 flex items-center justify-between">
-          <span className="text-xs text-gray-500">
-            {portUrl || 'No app running — start the app from the Upload page'}
+      {/* Left: iframe */}
+      <div className="flex-1 flex flex-col border-r border-surface-border">
+        <div className="px-4 py-2 border-b border-surface-border bg-surface-elevated/50 flex items-center justify-between">
+          <span className="text-xs text-gray-500 truncate">
+            {portUrl || 'No app running'}
           </span>
           {portUrl && (
             <a
               href={portUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-blue-400 hover:text-blue-300"
+              className="flex items-center gap-1 text-xs text-sherpa-400 hover:text-sherpa-300 transition-colors"
             >
-              Open in new tab
+              <ExternalLink className="w-3 h-3" />
+              New tab
             </a>
           )}
         </div>
@@ -207,80 +231,105 @@ export default function OnboardPage() {
             title="Running application"
           />
         ) : (
-          <div className="flex-1 flex items-center justify-center text-gray-600">
-            <p>Upload and run a repo to see the app here</p>
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-gray-600 text-sm">Upload and run a repo to see the app here</p>
           </div>
         )}
       </div>
 
       {/* Right: chat */}
-      <div className="w-[420px] flex flex-col bg-gray-950">
+      <div className="w-[420px] flex flex-col bg-surface">
         {/* Progress bar */}
-        <div className="px-4 py-3 border-b border-gray-800">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-xs font-medium text-gray-400">
-              {progress && progress.currentFlowIndex >= program.flows.length
+        <div className="px-4 py-3.5 border-b border-surface-border bg-surface-elevated/50">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-medium text-gray-300">
+              {isComplete
                 ? 'Onboarding complete!'
                 : currentFlow
                   ? `Flow ${(progress?.currentFlowIndex ?? 0) + 1}/${program.flows.length}: ${currentFlow.name}`
                   : 'Starting...'}
             </span>
-            <span className="text-xs text-gray-500">{completedPct}%</span>
+            <span className={`text-xs font-semibold ${isComplete ? 'text-green-400' : 'text-sherpa-400'}`}>
+              {completedPct}%
+            </span>
           </div>
-          <div className="w-full bg-gray-800 rounded-full h-1.5">
-            <div
-              className="bg-blue-500 h-1.5 rounded-full transition-all duration-500"
-              style={{ width: `${completedPct}%` }}
+          <div className="w-full bg-surface-card rounded-full h-1.5 overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${completedPct}%` }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+              className={`h-full rounded-full ${isComplete ? 'bg-gradient-to-r from-green-500 to-emerald-400' : 'bg-gradient-to-r from-sherpa-500 to-sherpa-400'}`}
             />
           </div>
-          {currentStep && (
-            <p className="text-xs text-gray-500 mt-1.5 truncate">
+          {currentStep && !isComplete && (
+            <p className="text-[11px] text-gray-500 mt-1.5 truncate">
               Step {(progress?.currentStepIndex ?? 0) + 1}: {currentStep.title}
             </p>
           )}
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
           {messages.map((msg, i) => (
-            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
+              {msg.role === 'assistant' && (
+                <div className="flex-shrink-0 w-6 h-6 rounded-lg bg-sherpa-500/10 flex items-center justify-center mr-2 mt-1">
+                  <Bot className="w-3.5 h-3.5 text-sherpa-400" />
+                </div>
+              )}
               <div
-                className={`max-w-[90%] rounded-xl px-4 py-2.5 text-sm whitespace-pre-wrap ${
+                className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap leading-relaxed ${
                   msg.role === 'user'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-800 text-gray-200 border border-gray-700'
+                    ? 'bg-gradient-to-r from-sherpa-500 to-sherpa-600 text-white rounded-br-md'
+                    : 'bg-surface-elevated text-gray-200 border border-surface-border rounded-bl-md'
                 }`}
               >
                 {msg.content}
                 {streaming && i === messages.length - 1 && msg.role === 'assistant' && (
-                  <span className="inline-block w-2 h-4 bg-blue-400 ml-1 animate-pulse" />
+                  <span className="inline-flex gap-0.5 ml-1.5 -mb-0.5">
+                    <span className="typing-dot w-1.5 h-1.5 rounded-full bg-sherpa-400" />
+                    <span className="typing-dot w-1.5 h-1.5 rounded-full bg-sherpa-400" />
+                    <span className="typing-dot w-1.5 h-1.5 rounded-full bg-sherpa-400" />
+                  </span>
                 )}
               </div>
-            </div>
+              {msg.role === 'user' && (
+                <div className="flex-shrink-0 w-6 h-6 rounded-lg bg-surface-card border border-surface-border flex items-center justify-center ml-2 mt-1">
+                  <User className="w-3.5 h-3.5 text-gray-400" />
+                </div>
+              )}
+            </motion.div>
           ))}
           <div ref={bottomRef} />
         </div>
 
         {/* Input */}
-        <form onSubmit={handleSubmit} className="border-t border-gray-800 p-3 flex gap-2">
+        <form onSubmit={handleSubmit} className="border-t border-surface-border p-3 flex gap-2">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={streaming}
             placeholder="Type a message or 'done' when finished..."
-            className="flex-1 rounded-lg bg-gray-800 border border-gray-600 px-3 py-2 text-sm text-gray-100
-              placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500
-              disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 rounded-xl bg-surface-card border border-surface-border px-4 py-2.5 text-sm text-gray-100
+              placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-sherpa-500/40 focus:border-sherpa-500/30
+              disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           />
           <button
             type="submit"
             disabled={streaming || !input.trim()}
-            className="rounded-lg bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700
-              disabled:cursor-not-allowed px-4 py-2 text-sm font-semibold text-white
-              transition-colors duration-150"
+            className="rounded-xl bg-gradient-to-r from-sherpa-500 to-sherpa-600 hover:from-sherpa-400 hover:to-sherpa-500
+              disabled:from-gray-700 disabled:to-gray-700 disabled:cursor-not-allowed
+              px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200
+              shadow-md shadow-sherpa-500/15 disabled:shadow-none"
           >
-            Send
+            <Send className="w-4 h-4" />
           </button>
         </form>
       </div>

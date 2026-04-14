@@ -21,6 +21,9 @@ app.use((_req, res, next) => {
   next();
 });
 
+// Serve widget static files
+app.use('/widget', express.static(new URL('./public', import.meta.url).pathname));
+
 // SSE endpoint
 app.get('/api/events', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');

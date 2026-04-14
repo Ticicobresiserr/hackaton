@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { Rocket, MessageSquare, ExternalLink, FileCode2 } from 'lucide-react';
 import FlowCard from '@/components/FlowCard';
 import ChatPanel, { ChatMessage } from '@/components/ChatPanel';
 import type { OnboardingProgram } from '@/hooks/useSSE';
@@ -12,7 +14,6 @@ export default function ProgramPage() {
   const [streaming, setStreaming] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Fetch program on mount
   useEffect(() => {
     fetch('/api/program')
       .then((r) => r.json())
@@ -28,11 +29,8 @@ export default function ProgramPage() {
     async (message: string) => {
       if (streaming) return;
 
-      // Add user message
       setMessages((prev) => [...prev, { role: 'user', content: message }]);
       setStreaming(true);
-
-      // Add empty assistant message for streaming
       setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
 
       try {
@@ -94,8 +92,11 @@ export default function ProgramPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen p-6 md:p-10 max-w-6xl mx-auto">
-        <p className="text-gray-400">Loading program...</p>
+      <main className="min-h-screen p-6 md:p-10 max-w-6xl mx-auto flex items-center justify-center">
+        <div className="flex items-center gap-3 text-gray-500">
+          <div className="w-5 h-5 border-2 border-gray-600 border-t-sherpa-500 rounded-full animate-spin" />
+          <span className="text-sm">Loading program...</span>
+        </div>
       </main>
     );
   }
@@ -103,67 +104,95 @@ export default function ProgramPage() {
   if (!program) {
     return (
       <main className="min-h-screen flex items-center justify-center">
-        <div className="text-center max-w-md px-6">
-          <div className="w-14 h-14 rounded-2xl bg-gray-800 flex items-center justify-center mx-auto mb-4">
-            <span className="text-2xl">&#128203;</span>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center max-w-md px-6"
+        >
+          <div className="w-16 h-16 rounded-2xl bg-surface-elevated border border-surface-border flex items-center justify-center mx-auto mb-5">
+            <FileCode2 className="w-7 h-7 text-gray-500" />
           </div>
           <h2 className="text-xl font-bold text-white mb-2">No program yet</h2>
-          <p className="text-gray-400 text-sm mb-6">
+          <p className="text-gray-500 text-sm mb-8 leading-relaxed">
             Upload a repository first. Our AI will analyze it and generate the onboarding flows automatically.
           </p>
-          <a href="/" className="inline-block rounded-xl bg-blue-600 hover:bg-blue-500 px-6 py-2.5 text-sm font-semibold text-white transition-colors">
+          <a
+            href="/"
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-sherpa-500 to-sherpa-600
+              hover:from-sherpa-400 hover:to-sherpa-500 px-6 py-2.5 text-sm font-semibold text-white
+              transition-all duration-200 shadow-lg shadow-sherpa-500/20"
+          >
             Go to Analyze
           </a>
-        </div>
+        </motion.div>
       </main>
     );
   }
 
+  const totalSteps = program.flows.reduce((s, f) => s + f.steps.length, 0);
+
   return (
     <main className="min-h-screen p-6 md:p-10 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between gap-4 mb-6">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between gap-4 mb-8"
+      >
         <div>
-          <h1 className="text-xl font-bold text-white">{program.platformName} — Onboarding Program</h1>
-          <p className="text-gray-500 text-sm mt-0.5">
-            {program.flows.length} flows, {program.flows.reduce((s, f) => s + f.steps.length, 0)} steps
+          <h1 className="text-2xl font-bold text-white">{program.platformName}</h1>
+          <p className="text-gray-500 text-sm mt-1">
+            {program.flows.length} flows &middot; {totalSteps} steps &middot; Onboarding Program
           </p>
         </div>
         <div className="flex items-center gap-3">
           {published && (
-            <a href="/onboard" className="rounded-xl bg-white/10 hover:bg-white/15 px-4 py-2 text-sm font-medium text-white transition-colors">
+            <a
+              href="/onboard"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1]
+                border border-white/[0.08] px-4 py-2.5 text-sm font-medium text-gray-300
+                hover:text-white transition-all duration-200"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
               Open Onboarding
             </a>
           )}
           {!published ? (
             <button
               onClick={handlePublish}
-              className="rounded-xl bg-green-600 hover:bg-green-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600
+                hover:from-green-400 hover:to-emerald-500 px-5 py-2.5 text-sm font-semibold text-white
+                transition-all duration-200 shadow-lg shadow-green-500/20 hover:shadow-green-500/30"
             >
+              <Rocket className="w-4 h-4" />
               Publish
             </button>
           ) : (
-            <span className="px-3 py-1.5 rounded-full bg-green-900/40 text-green-400 text-xs font-medium">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
               Live
             </span>
           )}
         </div>
-      </div>
+      </motion.div>
 
+      {/* Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 h-[calc(100vh-220px)]">
         {/* Flows */}
-        <div className="lg:col-span-3 overflow-y-auto space-y-4 pr-2">
+        <div className="lg:col-span-3 overflow-y-auto space-y-3 pr-2">
           {program.flows.map((flow, i) => (
             <FlowCard key={flow.id} flow={flow} index={i} />
           ))}
         </div>
 
         {/* Chat */}
-        <div className="lg:col-span-2 rounded-xl border border-gray-700 bg-gray-900/50 overflow-hidden flex flex-col">
-          <div className="px-4 py-3 border-b border-gray-700 bg-gray-800/50">
-            <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">
-              Refine via Chat
-            </h2>
-            <p className="text-xs text-gray-500 mt-0.5">Ask to add, remove, or modify flows and steps</p>
+        <div className="lg:col-span-2 rounded-2xl border border-surface-border bg-surface-elevated/60 overflow-hidden flex flex-col">
+          <div className="px-5 py-4 border-b border-surface-border">
+            <div className="flex items-center gap-2">
+              <MessageSquare className="w-4 h-4 text-sherpa-500" />
+              <h2 className="text-sm font-semibold text-gray-200">Refine via Chat</h2>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">Ask to add, remove, or modify flows and steps</p>
           </div>
           <ChatPanel
             messages={messages}

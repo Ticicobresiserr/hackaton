@@ -2,14 +2,24 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
+import { GitBranch, Upload, ArrowRight, Sparkles, Code2, Zap, CheckCircle2 } from 'lucide-react';
 import { useSSE } from '@/hooks/useSSE';
 import ThinkingPanel from '@/components/ThinkingPanel';
+import AuroraBackground from '@/components/ui/aurora-background';
+
+const FEATURES = [
+  { icon: Code2, title: 'Reads your code', desc: 'Every file, route, and form field' },
+  { icon: Zap, title: 'Zero setup', desc: 'No manual configuration ever' },
+  { icon: Sparkles, title: 'AI-powered', desc: 'Claude Opus 4.6 analysis' },
+];
 
 export default function Home() {
   const { status, message, portUrl, logs, thinking, program } = useSSE();
   const [url, setUrl] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
 
   const busy = status !== 'idle' && status !== 'error';
 
@@ -45,141 +55,282 @@ export default function Home() {
   const isWorking = busy && !isAnalyzing;
 
   return (
-    <main className="min-h-screen">
-      {/* Hero */}
-      {!busy && !program && (
-        <section className="pt-20 pb-16 px-6 text-center max-w-3xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight leading-tight">
-            Turn any codebase into an
-            <span className="text-blue-400"> intelligent onboarding agent</span>
-          </h1>
-          <p className="text-lg text-gray-400 mt-4 max-w-xl mx-auto">
-            Upload your repo. Our AI reads every file, detects the critical user flows,
-            and creates a step-by-step onboarding program — in minutes, not months.
-          </p>
-        </section>
-      )}
+    <AuroraBackground className="min-h-[calc(100vh-56px)]">
+      <main className="min-h-[calc(100vh-56px)]">
+        {/* Hero */}
+        <AnimatePresence mode="wait">
+          {!busy && !program && (
+            <motion.div
+              key="hero"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4 }}
+            >
+              <section className="pt-24 pb-8 px-6 text-center max-w-3xl mx-auto">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-sherpa-500/20 bg-sherpa-500/5 mb-8"
+                >
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-sherpa-400" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-sherpa-500" />
+                  </span>
+                  <span className="text-xs font-medium text-sherpa-400">Powered by Claude Opus 4.6</span>
+                </motion.div>
 
-      {/* Upload section */}
-      {!program && (
-        <section className="max-w-2xl mx-auto px-6 pb-12">
-          {/* GitHub URL */}
-          <form onSubmit={handleGitHub} className="mb-4">
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Paste your GitHub repository URL
-            </label>
-            <div className="flex gap-3">
-              <input
-                type="url"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://github.com/your-org/your-app"
-                disabled={busy}
-                className="flex-1 rounded-xl bg-gray-900 border border-gray-700 px-4 py-3 text-sm text-gray-100
-                  placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                  disabled:opacity-50 disabled:cursor-not-allowed"
-              />
-              <button
-                type="submit"
-                disabled={busy || !url.trim()}
-                className="rounded-xl bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700
-                  disabled:cursor-not-allowed px-6 py-3 text-sm font-semibold text-white
-                  transition-colors duration-150 whitespace-nowrap"
+                <motion.h1
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="text-5xl md:text-6xl font-extrabold text-white tracking-tight leading-[1.1]"
+                >
+                  Turn any codebase into an{' '}
+                  <span className="text-gradient-sherpa">intelligent onboarding agent</span>
+                </motion.h1>
+
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="text-lg text-gray-400 mt-6 max-w-xl mx-auto leading-relaxed"
+                >
+                  Upload your repo. Our AI reads every file, detects the critical user flows,
+                  and creates a step-by-step onboarding program — in minutes, not months.
+                </motion.p>
+
+                {/* Feature badges */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="flex items-center justify-center gap-6 mt-8"
+                >
+                  {FEATURES.map(({ icon: Icon, title, desc }) => (
+                    <div key={title} className="flex items-center gap-2 text-left">
+                      <div className="w-8 h-8 rounded-lg bg-sherpa-500/10 flex items-center justify-center flex-shrink-0">
+                        <Icon className="w-4 h-4 text-sherpa-400" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-gray-300">{title}</p>
+                        <p className="text-[11px] text-gray-500">{desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </motion.div>
+              </section>
+
+              {/* Upload section */}
+              <motion.section
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="max-w-xl mx-auto px-6 pb-20"
               >
-                {submitting ? 'Starting...' : 'Analyze'}
-              </button>
-            </div>
-          </form>
+                {/* GitHub URL input */}
+                <form onSubmit={handleGitHub} className="mb-5">
+                  <label className="block text-sm font-medium text-gray-400 mb-2.5">
+                    Paste a GitHub repository URL
+                  </label>
+                  <div className="flex gap-3">
+                    <div className="relative flex-1 group">
+                      <GitBranch className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 transition-colors group-focus-within:text-sherpa-500" />
+                      <input
+                        type="url"
+                        value={url}
+                        onChange={(e) => setUrl(e.target.value)}
+                        placeholder="https://github.com/your-org/your-app"
+                        disabled={busy}
+                        className="w-full rounded-xl bg-surface-elevated border border-surface-border pl-10 pr-4 py-3 text-sm text-gray-100
+                          placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-sherpa-500/50 focus:border-sherpa-500/50
+                          disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={busy || !url.trim()}
+                      className="rounded-xl bg-gradient-to-r from-sherpa-500 to-sherpa-600 hover:from-sherpa-400 hover:to-sherpa-500
+                        disabled:from-gray-700 disabled:to-gray-700 disabled:cursor-not-allowed
+                        px-6 py-3 text-sm font-semibold text-white transition-all duration-200
+                        shadow-lg shadow-sherpa-500/20 hover:shadow-sherpa-500/30 disabled:shadow-none
+                        flex items-center gap-2"
+                    >
+                      Analyze
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </form>
 
-          {/* Divider */}
-          <div className="flex items-center gap-4 my-6">
-            <div className="flex-1 h-px bg-gray-800" />
-            <span className="text-xs text-gray-600 uppercase tracking-wider">or upload a ZIP</span>
-            <div className="flex-1 h-px bg-gray-800" />
-          </div>
+                {/* Divider */}
+                <div className="flex items-center gap-4 my-6">
+                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-surface-border to-transparent" />
+                  <span className="text-xs text-gray-600 uppercase tracking-widest font-medium">or upload a zip</span>
+                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-surface-border to-transparent" />
+                </div>
 
-          {/* ZIP upload */}
-          <div
-            onClick={() => {
-              if (busy) return;
-              const input = document.createElement('input');
-              input.type = 'file';
-              input.accept = '.zip';
-              input.onchange = (e) => {
-                const f = (e.target as HTMLInputElement).files?.[0];
-                if (f) handleFileUpload(f);
-              };
-              input.click();
-            }}
-            className={`rounded-xl border-2 border-dashed p-8 text-center cursor-pointer transition-all
-              ${busy
-                ? 'border-gray-800 opacity-50 cursor-not-allowed'
-                : 'border-gray-700 hover:border-blue-500 hover:bg-blue-950/10'
-              }`}
-          >
-            <p className="text-gray-400 text-sm">
-              {file ? file.name : 'Drop a ZIP file here or click to browse'}
-            </p>
-          </div>
-        </section>
-      )}
+                {/* ZIP upload - drop zone */}
+                <div
+                  onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setDragOver(false);
+                    const f = e.dataTransfer.files[0];
+                    if (f) handleFileUpload(f);
+                  }}
+                  onClick={() => {
+                    if (busy) return;
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = '.zip';
+                    input.onchange = (e) => {
+                      const f = (e.target as HTMLInputElement).files?.[0];
+                      if (f) handleFileUpload(f);
+                    };
+                    input.click();
+                  }}
+                  className={`group relative rounded-xl border-2 border-dashed p-10 text-center cursor-pointer transition-all duration-300 ${
+                    busy
+                      ? 'border-gray-800/50 opacity-50 cursor-not-allowed'
+                      : dragOver
+                        ? 'border-sherpa-500 bg-sherpa-500/5 scale-[1.01]'
+                        : 'border-surface-border hover:border-sherpa-500/40 hover:bg-sherpa-500/[0.03]'
+                  }`}
+                >
+                  <Upload className={`w-8 h-8 mx-auto mb-3 transition-all duration-300 ${
+                    dragOver ? 'text-sherpa-400 scale-110' : 'text-gray-600 group-hover:text-gray-400'
+                  }`} />
+                  <p className="text-sm text-gray-400 font-medium">
+                    {file ? file.name : 'Drop a ZIP file here or click to browse'}
+                  </p>
+                  <p className="text-xs text-gray-600 mt-1">
+                    Supports any web application codebase
+                  </p>
+                </div>
+              </motion.section>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      {/* Progress section */}
-      {isWorking && !program && (
-        <section className="max-w-2xl mx-auto px-6 pb-8">
-          <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-6 text-center">
-            <div className="flex items-center justify-center gap-3 mb-3">
-              <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-blue-400" />
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-400" />
-              </span>
-              <p className="text-white font-medium">{message}</p>
-            </div>
-            <p className="text-sm text-gray-500">This may take a minute. We&apos;re cloning, installing, and starting your app.</p>
-          </div>
-        </section>
-      )}
+        {/* Progress */}
+        <AnimatePresence>
+          {isWorking && !program && (
+            <motion.section
+              key="progress"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="max-w-xl mx-auto px-6 pt-20 pb-8"
+            >
+              <div className="rounded-2xl border border-surface-border bg-surface-elevated/80 p-8 text-center border-glow-sherpa">
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  <span className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-sherpa-400" />
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-sherpa-500" />
+                  </span>
+                  <p className="text-white font-semibold">{message}</p>
+                </div>
+                <p className="text-sm text-gray-500">
+                  Cloning, installing, and starting your app...
+                </p>
+                <div className="mt-6 w-full h-1 bg-surface-border rounded-full overflow-hidden">
+                  <div className="h-full w-1/3 rounded-full bg-gradient-to-r from-sherpa-500 to-sherpa-400 animate-shimmer" />
+                </div>
+              </div>
+            </motion.section>
+          )}
+        </AnimatePresence>
 
-      {/* Thinking panel */}
-      {isAnalyzing && (
-        <section className="max-w-3xl mx-auto px-6 pb-8">
-          <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-6 text-center mb-4">
-            <div className="flex items-center justify-center gap-3">
-              <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-purple-400" />
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-purple-400" />
-              </span>
-              <p className="text-white font-medium">AI is analyzing your codebase...</p>
-            </div>
-            <p className="text-sm text-gray-500 mt-1">Claude Opus 4.6 is reading every file, identifying critical user flows.</p>
-          </div>
-          <ThinkingPanel thinking={thinking} />
-        </section>
-      )}
+        {/* Thinking */}
+        <AnimatePresence>
+          {isAnalyzing && (
+            <motion.section
+              key="thinking"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="max-w-3xl mx-auto px-6 pt-16 pb-8"
+            >
+              <div className="rounded-2xl border border-indigo-500/20 bg-surface-elevated/80 p-6 text-center mb-5 border-glow-indigo">
+                <div className="flex items-center justify-center gap-3">
+                  <span className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-indigo-400" />
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-500" />
+                  </span>
+                  <p className="text-white font-semibold">AI is analyzing your codebase...</p>
+                </div>
+                <p className="text-sm text-gray-500 mt-1.5">
+                  Claude Opus 4.6 is reading every file, identifying critical user flows
+                </p>
+              </div>
+              <ThinkingPanel thinking={thinking} />
+            </motion.section>
+          )}
+        </AnimatePresence>
 
-      {/* Program ready */}
-      {program && (
-        <section className="max-w-2xl mx-auto px-6 pt-16 pb-12 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-green-600/20 flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8 text-green-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-white mb-2">
-            Onboarding program ready for &quot;{program.platformName}&quot;
-          </h2>
-          <p className="text-gray-400 mb-2">{program.platformDescription}</p>
-          <p className="text-sm text-gray-500 mb-8">
-            {program.flows.length} flows, {program.flows.reduce((s, f) => s + f.steps.length, 0)} steps detected automatically
-          </p>
-          <Link
-            href="/program"
-            className="inline-block rounded-xl bg-blue-600 hover:bg-blue-500 px-8 py-3 text-sm font-semibold text-white transition-colors"
-          >
-            Review & Customize
-          </Link>
-        </section>
-      )}
-    </main>
+        {/* Program ready */}
+        <AnimatePresence>
+          {program && (
+            <motion.section
+              key="done"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ type: 'spring', damping: 20, stiffness: 200 }}
+              className="max-w-xl mx-auto px-6 pt-24 pb-16 text-center"
+            >
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: 'spring', damping: 12 }}
+                className="w-20 h-20 rounded-2xl bg-gradient-to-br from-green-500/20 to-emerald-500/10 flex items-center justify-center mx-auto mb-8 border border-green-500/20"
+              >
+                <CheckCircle2 className="w-10 h-10 text-green-400" />
+              </motion.div>
+              <motion.h2
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-3xl font-bold text-white mb-3"
+              >
+                Onboarding program ready
+              </motion.h2>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="text-gray-400 mb-2"
+              >
+                {program.platformName} — {program.platformDescription}
+              </motion.p>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.45 }}
+                className="text-sm text-gray-500 mb-10"
+              >
+                {program.flows.length} flows &middot; {program.flows.reduce((s: number, f) => s + f.steps.length, 0)} steps detected automatically
+              </motion.p>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <Link
+                  href="/program"
+                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-sherpa-500 to-sherpa-600
+                    hover:from-sherpa-400 hover:to-sherpa-500 px-8 py-3.5 text-sm font-semibold text-white
+                    transition-all duration-200 shadow-lg shadow-sherpa-500/20 hover:shadow-sherpa-500/30"
+                >
+                  Review & Customize
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </motion.div>
+            </motion.section>
+          )}
+        </AnimatePresence>
+      </main>
+    </AuroraBackground>
   );
 }
