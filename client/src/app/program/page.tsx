@@ -67,8 +67,27 @@ export default function ProgramPage() {
                   }
                   return updated;
                 });
+              } else if (data.type === 'updating') {
+                // Show "updating flows..." while JSON generates
+                setMessages((prev) => {
+                  const updated = [...prev];
+                  const last = updated[updated.length - 1];
+                  if (last && last.role === 'assistant') {
+                    updated[updated.length - 1] = { ...last, content: last.content + '\n\n_Updating flows..._' };
+                  }
+                  return updated;
+                });
               } else if (data.type === 'program') {
                 setProgram(data.program);
+                // Remove the "updating" message
+                setMessages((prev) => {
+                  const updated = [...prev];
+                  const last = updated[updated.length - 1];
+                  if (last && last.role === 'assistant') {
+                    updated[updated.length - 1] = { ...last, content: last.content.replace('\n\n_Updating flows..._', '') };
+                  }
+                  return updated;
+                });
               }
             } catch { /* skip malformed */ }
           }

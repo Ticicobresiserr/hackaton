@@ -98,7 +98,7 @@ export async function analyzeFlows(projectDir) {
       max_tokens: 16000,
       thinking: {
         type: 'enabled',
-        budget_tokens: 10000,
+        budget_tokens: 50000,
       },
       system: [
         {

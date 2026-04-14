@@ -36,8 +36,8 @@ router.post('/refine', async (req, res) => {
   res.flushHeaders();
 
   try {
-    // Step 1: Stream a short conversational response to the user
-    const chatStream = await client.messages.stream({
+    // Run BOTH calls in parallel: conversational response + JSON update
+    const chatPromise = client.messages.stream({
       model: 'claude-sonnet-4-6',
       max_tokens: 300,
       system: `You are an assistant helping a platform owner refine their onboarding program.
@@ -47,14 +47,7 @@ Do NOT output any JSON, code, or technical details. Just a natural language ackn
       messages: [{ role: 'user', content: message }],
     });
 
-    for await (const event of chatStream) {
-      if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
-        res.write(`data: ${JSON.stringify({ type: 'text', content: event.delta.text })}\n\n`);
-      }
-    }
-
-    // Step 2: Separately, generate the updated program JSON (NOT streamed to user)
-    const jsonResponse = await client.messages.create({
+    const jsonPromise = client.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 8000,
       system: `You modify onboarding programs based on user requests.
@@ -68,6 +61,19 @@ The JSON must match the exact same schema as the input program.`,
       ],
     });
 
+    // Stream the chat response while JSON generates in background
+    const chatStream = await chatPromise;
+    for await (const event of chatStream) {
+      if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+        res.write(`data: ${JSON.stringify({ type: 'text', content: event.delta.text })}\n\n`);
+      }
+    }
+
+    // Signal that program is updating
+    res.write(`data: ${JSON.stringify({ type: 'updating' })}\n\n`);
+
+    // Wait for JSON result (may already be done since it ran in parallel)
+    const jsonResponse = await jsonPromise;
     const jsonText = jsonResponse.content.find((b) => b.type === 'text')?.text ?? '';
     const cleaned = jsonText
       .replace(/^```(?:json)?\s*/m, '')
@@ -79,7 +85,6 @@ The JSON must match the exact same schema as the input program.`,
       store.setProgram(updated);
       res.write(`data: ${JSON.stringify({ type: 'program', program: updated })}\n\n`);
     } catch {
-      // Try to extract JSON object
       const match = cleaned.match(/(\{[\s\S]+\})/);
       if (match) {
         const updated = JSON.parse(match[1]);
