@@ -1,0 +1,52 @@
+{
+  "id": "create-first-account",
+  "name": "Crear tu primera cuenta en NextCRM",
+  "description": "Aprendé a crear una cuenta de empresa en el CRM.",
+  "targetUrl": "http://localhost:3000",
+  "steps": [
+    {
+      "id": "step-1",
+      "order": 1,
+      "title": "Ir al dashboard",
+      "instruction": "Mirá el dashboard principal. Vas a ver el menú de navegación a la izquierda con las secciones del CRM.",
+      "completionCriteria": {
+        "type": "url",
+        "pattern": "/dashboard"
+      },
+      "hints": ["Si no estás en el dashboard, hacé click en el logo o en 'Dashboard' en el menú."]
+    },
+    {
+      "id": "step-2",
+      "order": 2,
+      "title": "Ir a Accounts",
+      "instruction": "Hacé click en 'Accounts' en el menú lateral para ver la lista de cuentas.",
+      "completionCriteria": {
+        "type": "url",
+        "pattern": "/accounts"
+      },
+      "hints": ["Buscá 'Accounts' en la barra de navegación izquierda."]
+    },
+    {
+      "id": "step-3",
+      "order": 3,
+      "title": "Crear nueva cuenta",
+      "instruction": "Hacé click en el botón para crear una nueva cuenta (puede ser '+' o 'New Account').",
+      "completionCriteria": {
+        "type": "semantic",
+        "question": "¿Hay un formulario o dialog visible para crear una nueva cuenta con campos como nombre, industria, o similar?"
+      },
+      "hints": ["Buscá un botón arriba a la derecha que diga 'New', 'Create', o tenga un ícono '+'."]
+    },
+    {
+      "id": "step-4",
+      "order": 4,
+      "title": "Completar y guardar",
+      "instruction": "Llená al menos el nombre de la cuenta y hacé click en guardar.",
+      "completionCriteria": {
+        "type": "semantic",
+        "question": "¿Se creó la cuenta exitosamente? ¿Estamos en la vista de detalle de la cuenta o volvimos a la lista con la nueva cuenta visible?"
+      },
+      "hints": ["Completá los campos obligatorios (suelen tener asterisco) y buscá el botón 'Save' o 'Create'."]
+    }
+  ]
+}

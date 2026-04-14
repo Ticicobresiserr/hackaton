@@ -1,0 +1,269 @@
+{
+  "platformName": "TaskFlow",
+  "platformDescription": "A project management application for modern teams to organize projects, track tasks across Kanban-style boards, and collaborate with team members.",
+  "flows": [
+    {
+      "id": "flow_1",
+      "name": "Sign In to Your Account",
+      "description": "Signing in is the first step to access all of TaskFlow's features including your projects, tasks, and team management.",
+      "estimatedMinutes": 1,
+      "order": 1,
+      "steps": [
+        {
+          "id": "flow_1_step_1",
+          "title": "Open the login page",
+          "instruction": "Navigate to the TaskFlow login page. You will see a dark-themed sign-in form with the TaskFlow logo and the tagline 'Project management for modern teams'.",
+          "explanation": "This is the entry point to the application where you authenticate your identity.",
+          "page": "/index.html",
+          "order": 1
+        },
+        {
+          "id": "flow_1_step_2",
+          "title": "Enter your credentials",
+          "instruction": "In the 'Email address' field, type your email (a demo value 'demo@taskflow.io' is pre-filled). In the 'Password' field, type your password (also pre-filled for demo).",
+          "explanation": "Your email and password authenticate your access to the workspace.",
+          "page": "/index.html",
+          "order": 2
+        },
+        {
+          "id": "flow_1_step_3",
+          "title": "Click Sign in",
+          "instruction": "Click the blue 'Sign in' button below the password field. You will be redirected to the Dashboard page.",
+          "explanation": "Submitting the form logs you in and takes you to your project dashboard.",
+          "page": "/index.html",
+          "order": 3
+        }
+      ]
+    },
+    {
+      "id": "flow_2",
+      "name": "Explore the Dashboard",
+      "description": "The Dashboard is your central hub showing all projects, their progress, and recent team activity. Understanding this page is essential for daily use.",
+      "estimatedMinutes": 2,
+      "order": 2,
+      "steps": [
+        {
+          "id": "flow_2_step_1",
+          "title": "Review your project cards",
+          "instruction": "On the Dashboard page, look at the grid of project cards below the 'Projects' heading. Each card shows a project name (e.g., 'Website Redesign'), a colored status dot, a short description, task count, member count, and a progress bar.",
+          "explanation": "Project cards give you an at-a-glance overview of all active work and how far along each project is.",
+          "page": "/dashboard.html",
+          "order": 1
+        },
+        {
+          "id": "flow_2_step_2",
+          "title": "Check recent activity",
+          "instruction": "Scroll down below the project cards to the 'Recent Activity' section. This shows a feed of recent actions like task completions, new task creations, and comments from team members.",
+          "explanation": "The activity feed keeps you informed about what your team is working on without needing to open each project individually.",
+          "page": "/dashboard.html",
+          "order": 2
+        },
+        {
+          "id": "flow_2_step_3",
+          "title": "Open a project",
+          "instruction": "Click on any project card (e.g., the 'Website Redesign' card) to navigate to that project's detailed task board view.",
+          "explanation": "Clicking a project card takes you to the Kanban-style task board where you can see and manage all tasks within that project.",
+          "page": "/dashboard.html",
+          "order": 3
+        }
+      ]
+    },
+    {
+      "id": "flow_3",
+      "name": "Create a New Project",
+      "description": "Creating projects is fundamental to organizing your team's work. Each project groups related tasks together with a name, description, and assigned members.",
+      "estimatedMinutes": 3,
+      "order": 3,
+      "steps": [
+        {
+          "id": "flow_3_step_1",
+          "title": "Navigate to the New Project page",
+          "instruction": "Click the blue '+ New Project' button in the top-right corner of the Dashboard page, or click '+ New Project' in the left sidebar navigation.",
+          "explanation": "This takes you to the project creation form where you define your new project's details.",
+          "page": "/dashboard.html",
+          "order": 1
+        },
+        {
+          "id": "flow_3_step_2",
+          "title": "Enter the project name",
+          "instruction": "In the 'Project Name' text field, type a name for your project (e.g., 'Website Redesign'). This is the name that will appear on the Dashboard.",
+          "explanation": "A clear project name helps your team quickly identify and find the project.",
+          "page": "/new-project.html",
+          "order": 2
+        },
+        {
+          "id": "flow_3_step_3",
+          "title": "Add a project description",
+          "instruction": "In the 'Description' textarea, type a brief description of what the project is about (e.g., 'Complete overhaul of the marketing website with new branding.').",
+          "explanation": "A description gives team members context about the project's goals and scope.",
+          "page": "/new-project.html",
+          "order": 3
+        },
+        {
+          "id": "flow_3_step_4",
+          "title": "Set project visibility",
+          "instruction": "Click the 'Visibility' dropdown and select one of the three options: 'Team — All members can see', 'Private — Only invited members', or 'Public — Visible to everyone'.",
+          "explanation": "Visibility controls who in your workspace can see and access this project.",
+          "page": "/new-project.html",
+          "order": 4
+        },
+        {
+          "id": "flow_3_step_5",
+          "title": "Invite members (optional)",
+          "instruction": "In the 'Invite Members' text field, enter email addresses separated by commas for any team members you want to add. You can skip this and add members later.",
+          "explanation": "Inviting members ensures the right people have access to collaborate from the start.",
+          "page": "/new-project.html",
+          "order": 5
+        },
+        {
+          "id": "flow_3_step_6",
+          "title": "Create the project",
+          "instruction": "Click the blue 'Create Project' button at the bottom of the form. You will be redirected to the new project's task board.",
+          "explanation": "Submitting the form creates your project and takes you directly to its Kanban board where you can start adding tasks.",
+          "page": "/new-project.html",
+          "order": 6
+        }
+      ]
+    },
+    {
+      "id": "flow_4",
+      "name": "Add a Task to a Project",
+      "description": "Tasks are the individual work items within a project. Adding tasks with priorities and assignees is how your team tracks and divides work.",
+      "estimatedMinutes": 2,
+      "order": 4,
+      "steps": [
+        {
+          "id": "flow_4_step_1",
+          "title": "Open the task creation modal",
+          "instruction": "On the project page (e.g., 'Website Redesign'), click the blue '+ Add Task' button in the top-right corner. A modal dialog will appear over the page.",
+          "explanation": "The modal provides a quick way to add tasks without leaving the project board.",
+          "page": "/project.html",
+          "order": 1
+        },
+        {
+          "id": "flow_4_step_2",
+          "title": "Enter the task title",
+          "instruction": "In the 'Task Title' field within the modal, type a clear description of the task (e.g., 'Design new homepage mockup').",
+          "explanation": "A specific task title helps team members understand exactly what needs to be done.",
+          "page": "/project.html",
+          "order": 2
+        },
+        {
+          "id": "flow_4_step_3",
+          "title": "Set the task priority",
+          "instruction": "Click the 'Priority' dropdown in the modal and select one of the three options: 'Low', 'Medium', or 'High'.",
+          "explanation": "Priority levels help the team focus on the most important or urgent work first.",
+          "page": "/project.html",
+          "order": 3
+        },
+        {
+          "id": "flow_4_step_4",
+          "title": "Assign the task to a team member",
+          "instruction": "Click the 'Assign to' dropdown in the modal and select a team member from the list (e.g., 'Alice (you)', 'Bob', or 'Carol').",
+          "explanation": "Assigning a task ensures someone is responsible for completing it and receives relevant notifications.",
+          "page": "/project.html",
+          "order": 4
+        },
+        {
+          "id": "flow_4_step_5",
+          "title": "Submit the task",
+          "instruction": "Click the blue 'Create Task' button at the bottom of the modal. The modal will close and the task will be added to the board.",
+          "explanation": "Creating the task adds it to the project's To Do column where it can be tracked and moved through the workflow.",
+          "page": "/project.html",
+          "order": 5
+        }
+      ]
+    },
+    {
+      "id": "flow_5",
+      "name": "Invite a Team Member",
+      "description": "Collaboration is central to TaskFlow. Inviting team members allows them to be assigned tasks, view projects, and contribute to your workspace.",
+      "estimatedMinutes": 2,
+      "order": 5,
+      "steps": [
+        {
+          "id": "flow_5_step_1",
+          "title": "Navigate to the Team page",
+          "instruction": "Click 'Team' (with the people icon) in the left sidebar navigation to go to the Team Members page.",
+          "explanation": "The Team page is where you manage all workspace members and their roles.",
+          "page": "/team.html",
+          "order": 1
+        },
+        {
+          "id": "flow_5_step_2",
+          "title": "Open the invite modal",
+          "instruction": "Click the blue '+ Invite Member' button in the top-right corner of the Team page. An invitation modal dialog will appear.",
+          "explanation": "The invite modal lets you send email invitations to new team members.",
+          "page": "/team.html",
+          "order": 2
+        },
+        {
+          "id": "flow_5_step_3",
+          "title": "Enter the invitee's email",
+          "instruction": "In the 'Email Address' field within the modal, type the email address of the person you want to invite (e.g., 'colleague@company.com').",
+          "explanation": "The email address is used to send the invitation and will become their login credential.",
+          "page": "/team.html",
+          "order": 3
+        },
+        {
+          "id": "flow_5_step_4",
+          "title": "Select a role",
+          "instruction": "Click the 'Role' dropdown in the modal and choose one of: 'Member — Can view and edit projects', 'Admin — Full access including settings', or 'Viewer — Read-only access'.",
+          "explanation": "Roles control what level of access the invited person will have in your workspace.",
+          "page": "/team.html",
+          "order": 4
+        },
+        {
+          "id": "flow_5_step_5",
+          "title": "Send the invitation",
+          "instruction": "Click the blue 'Send Invite' button at the bottom of the modal. The modal will close and the invited member will appear in the team list with a 'Pending' status.",
+          "explanation": "The invitation is sent via email, and you can track its status until the person accepts.",
+          "page": "/team.html",
+          "order": 5
+        }
+      ]
+    },
+    {
+      "id": "flow_6",
+      "name": "Update Your Profile and Settings",
+      "description": "Configuring your profile, notification preferences, and workspace settings ensures TaskFlow works the way you need it to.",
+      "estimatedMinutes": 3,
+      "order": 6,
+      "steps": [
+        {
+          "id": "flow_6_step_1",
+          "title": "Navigate to Settings",
+          "instruction": "Click 'Settings' (with the gear icon) in the left sidebar navigation to open the Settings page.",
+          "explanation": "The Settings page centralizes all account and workspace configuration options.",
+          "page": "/settings.html",
+          "order": 1
+        },
+        {
+          "id": "flow_6_step_2",
+          "title": "Update your profile",
+          "instruction": "In the 'Profile' section at the top, update your 'Full Name' and 'Email' fields as needed, then click the blue 'Save Changes' button.",
+          "explanation": "Your name is displayed throughout the app on task assignments, comments, and the team page.",
+          "page": "/settings.html",
+          "order": 2
+        },
+        {
+          "id": "flow_6_step_3",
+          "title": "Configure notifications",
+          "instruction": "Scroll to the 'Notifications' section. Toggle the switches for 'Email notifications', 'Push notifications', and 'Weekly digest'. Blue means enabled, gray means disabled.",
+          "explanation": "Notification settings let you control how and when you're alerted about task assignments, mentions, and team activity.",
+          "page": "/settings.html",
+          "order": 3
+        },
+        {
+          "id": "flow_6_step_4",
+          "title": "Update workspace settings",
+          "instruction": "Scroll to the 'Workspace' section. Update the 'Workspace Name' and select a 'Default Project Visibility', then click 'Save Changes'.",
+          "explanation": "Workspace settings affect all team members and control defaults for new projects.",
+          "page": "/settings.html",
+          "order": 4
+        }
+      ]
+    }
+  ],
+  "generatedAt": "2026-04-14T18:00:00.000Z"
+}
