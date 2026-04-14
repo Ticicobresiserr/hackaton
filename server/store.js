@@ -4,6 +4,7 @@ let program = null;
 let published = false;
 const sessions = new Map();
 let projectDir = null;
+let currentStatus = { state: 'idle', message: 'Ready' };
 
 export const store = {
   getProgram: () => program,
@@ -15,4 +16,6 @@ export const store = {
   getAllSessions: () => [...sessions.values()],
   getProjectDir: () => projectDir,
   setProjectDir: (d) => { projectDir = d; },
+  getStatus: () => currentStatus,
+  setStatus: (s) => { currentStatus = s; },
 };

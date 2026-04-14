@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import { addClient, removeClient, broadcast } from './sse.js';
+import { store } from './store.js';
 import { router as uploadRouter } from './routes/upload.js';
 import { router as githubRouter } from './routes/github.js';
 import { router as controlRouter } from './routes/control.js';
@@ -32,8 +33,15 @@ app.get('/api/events', (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.flushHeaders();
 
-  // Send initial state
-  res.write(`event: status\ndata: ${JSON.stringify({ state: 'idle', message: 'Ready' })}\n\n`);
+  // Send CURRENT state (not hardcoded idle) — prevents reset on reconnect
+  const currentStatus = store.getStatus();
+  res.write(`event: status\ndata: ${JSON.stringify(currentStatus)}\n\n`);
+
+  // Also send program if it exists
+  const program = store.getProgram();
+  if (program) {
+    res.write(`event: program\ndata: ${JSON.stringify({ program })}\n\n`);
+  }
 
   addClient(res);
   req.on('close', () => removeClient(res));

@@ -81,7 +81,11 @@ export async function runProject(projectDir) {
   currentProcess.on('close', (code) => {
     currentProcess = null;
     broadcast('stopped', { code });
-    broadcast('status', { state: 'idle', message: `Process exited with code ${code}` });
+    // Only go idle if we're not mid-analysis — otherwise the page resets
+    const currentState = store.getStatus().state;
+    if (currentState !== 'analyzing') {
+      broadcast('status', { state: 'idle', message: `Process exited with code ${code}` });
+    }
   });
 
   currentProcess.on('error', (err) => {
