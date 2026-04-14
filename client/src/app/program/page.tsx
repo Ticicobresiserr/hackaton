@@ -37,7 +37,7 @@ export default function ProgramPage() {
         const res = await fetch('/api/program/refine', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message }),
+          body: JSON.stringify({ message, history: messages.slice(-10) }),
         });
 
         const reader = res.body?.getReader();

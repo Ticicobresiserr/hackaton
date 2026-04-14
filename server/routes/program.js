@@ -19,7 +19,7 @@ router.post('/publish', (_req, res) => {
 });
 
 router.post('/refine', async (req, res) => {
-  const { message } = req.body;
+  const { message, history = [] } = req.body;
   const currentProgram = store.getProgram();
 
   if (!currentProgram) {
@@ -52,7 +52,10 @@ Supported ops:
 - {"op":"update_flow","flow_id":"flow_X","updates":{"name":"...","description":"..."}} — modifies a flow
 
 Current program flows: ${JSON.stringify(currentProgram.flows.map(f => ({ id: f.id, name: f.name, steps: f.steps.map(s => ({ id: s.id, title: s.title })) })))}`,
-      messages: [{ role: 'user', content: message }],
+      messages: [
+        ...history.filter(m => m.content).map(m => ({ role: m.role, content: m.content })),
+        { role: 'user', content: message },
+      ],
     });
 
     let fullText = '';
