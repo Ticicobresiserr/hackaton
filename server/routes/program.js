@@ -48,8 +48,8 @@ Do NOT output any JSON, code, or technical details. Just a natural language ackn
     });
 
     const jsonPromise = client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 8000,
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 4000,
       system: `You modify onboarding programs based on user requests.
 Given the current program and the user's requested change, output ONLY the complete updated program as valid JSON. No explanation, no markdown fences, just the JSON object.
 The JSON must match the exact same schema as the input program.`,
