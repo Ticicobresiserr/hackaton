@@ -2,13 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Mountain, LayoutDashboard, Route, Play, Compass } from 'lucide-react';
+import { Mountain, Route, Compass, Rocket } from 'lucide-react';
 
 const LINKS = [
   { href: '/', label: 'Analyze', icon: Compass },
   { href: '/program', label: 'Program', icon: Route },
-  { href: '/onboard', label: 'Onboard', icon: Play },
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/onboard', label: 'Deploy', icon: Rocket },
 ];
 
 export default function NavBar() {
