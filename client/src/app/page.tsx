@@ -20,13 +20,17 @@ export default function Home() {
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [userTriggered, setUserTriggered] = useState(false);
 
   const busy = status !== 'idle' && status !== 'error';
+  // Only show "program ready" if the user triggered analysis in THIS session
+  const showReady = program && userTriggered;
 
   async function handleGitHub(e: React.FormEvent) {
     e.preventDefault();
     if (!url.trim() || busy) return;
     setSubmitting(true);
+    setUserTriggered(true);
     try {
       await fetch('/api/github', {
         method: 'POST',
@@ -51,7 +55,7 @@ export default function Home() {
     }
   }
 
-  const isAnalyzing = status === 'analyzing' || (thinking && !program);
+  const isAnalyzing = status === 'analyzing' || (thinking && !showReady);
   const isWorking = busy && !isAnalyzing;
 
   return (
@@ -59,7 +63,7 @@ export default function Home() {
       <main className="min-h-[calc(100vh-56px)]">
         {/* Hero */}
         <AnimatePresence mode="wait">
-          {!busy && !program && (
+          {!busy && !showReady && (
             <motion.div
               key="hero"
               initial={{ opacity: 0 }}
@@ -216,7 +220,7 @@ export default function Home() {
 
         {/* Progress */}
         <AnimatePresence>
-          {isWorking && !program && (
+          {isWorking && !showReady && (
             <motion.section
               key="progress"
               initial={{ opacity: 0, scale: 0.95 }}
@@ -272,7 +276,7 @@ export default function Home() {
 
         {/* Program ready */}
         <AnimatePresence>
-          {program && (
+          {showReady && (
             <motion.section
               key="done"
               initial={{ opacity: 0, scale: 0.9 }}
