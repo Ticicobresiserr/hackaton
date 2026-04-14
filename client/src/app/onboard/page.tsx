@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Code2, ExternalLink, Mountain, CheckCircle2, Copy, Footprints, Clock } from 'lucide-react';
+import { Code2, ExternalLink, Mountain, CheckCircle2, Copy } from 'lucide-react';
+import FlowCard from '@/components/FlowCard';
 import type { OnboardingProgram } from '@/hooks/useSSE';
 import { useSSE } from '@/hooks/useSSE';
 
@@ -172,28 +173,11 @@ export default function OnboardPage() {
         >
           <div className="px-6 py-4 border-b border-surface-border">
             <h2 className="text-sm font-semibold text-white">Published Flows</h2>
+            <p className="text-xs text-gray-500 mt-0.5">Click a flow to expand and see all steps</p>
           </div>
-          <div className="divide-y divide-surface-border/50">
+          <div className="p-4 space-y-3">
             {program.flows.map((flow, i) => (
-              <div key={flow.id} className="px-6 py-4 flex items-center gap-4">
-                <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-sherpa-500 to-sherpa-600 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
-                  {i + 1}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-white font-medium">{flow.name}</p>
-                  <p className="text-xs text-gray-500 truncate">{flow.description}</p>
-                </div>
-                <div className="flex items-center gap-3 text-xs text-gray-600 flex-shrink-0">
-                  <span className="flex items-center gap-1">
-                    <Footprints className="w-3 h-3" />
-                    {flow.steps.length}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    ~{flow.estimatedMinutes}m
-                  </span>
-                </div>
-              </div>
+              <FlowCard key={flow.id} flow={flow} index={i} />
             ))}
           </div>
         </motion.div>
