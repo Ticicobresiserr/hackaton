@@ -36,48 +36,56 @@ router.post('/refine', async (req, res) => {
   res.flushHeaders();
 
   try {
-    const stream = await client.messages.stream({
+    // Step 1: Stream a short conversational response to the user
+    const chatStream = await client.messages.stream({
       model: 'claude-sonnet-4-6',
-      max_tokens: 8000,
-      system: `You are refining an onboarding program for a web platform based on the owner's feedback.
-
-Current program:
-${JSON.stringify(currentProgram, null, 2)}
-
-The user will ask you to modify flows, add steps, remove steps, reorder things, etc.
-
-Respond in two parts:
-1. A brief natural language acknowledgment of what you changed (2-3 sentences max)
-2. Then on a new line, the marker ===PROGRAM_JSON=== followed by the COMPLETE updated program JSON
-
-IMPORTANT: Always return the COMPLETE program (all flows, all steps), not just the changed parts. The JSON must be valid and match the original schema exactly.`,
+      max_tokens: 300,
+      system: `You are an assistant helping a platform owner refine their onboarding program.
+The user will ask to add, remove, or change onboarding flows and steps.
+Respond with a brief, friendly confirmation of what you'll change (2-3 sentences max).
+Do NOT output any JSON, code, or technical details. Just a natural language acknowledgment.`,
       messages: [{ role: 'user', content: message }],
     });
 
-    let fullText = '';
-
-    for await (const event of stream) {
+    for await (const event of chatStream) {
       if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
-        fullText += event.delta.text;
         res.write(`data: ${JSON.stringify({ type: 'text', content: event.delta.text })}\n\n`);
       }
     }
 
-    // Extract updated program JSON
-    const jsonMarker = '===PROGRAM_JSON===';
-    const markerIndex = fullText.indexOf(jsonMarker);
-    if (markerIndex !== -1) {
-      const jsonStr = fullText
-        .slice(markerIndex + jsonMarker.length)
-        .trim()
-        .replace(/^```(?:json)?\s*/m, '')
-        .replace(/\s*```\s*$/m, '')
-        .trim();
-      try {
-        const updated = JSON.parse(jsonStr);
+    // Step 2: Separately, generate the updated program JSON (NOT streamed to user)
+    const jsonResponse = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 8000,
+      system: `You modify onboarding programs based on user requests.
+Given the current program and the user's requested change, output ONLY the complete updated program as valid JSON. No explanation, no markdown fences, just the JSON object.
+The JSON must match the exact same schema as the input program.`,
+      messages: [
+        {
+          role: 'user',
+          content: `Current program:\n${JSON.stringify(currentProgram, null, 2)}\n\nRequested change: ${message}`,
+        },
+      ],
+    });
+
+    const jsonText = jsonResponse.content.find((b) => b.type === 'text')?.text ?? '';
+    const cleaned = jsonText
+      .replace(/^```(?:json)?\s*/m, '')
+      .replace(/\s*```\s*$/m, '')
+      .trim();
+
+    try {
+      const updated = JSON.parse(cleaned);
+      store.setProgram(updated);
+      res.write(`data: ${JSON.stringify({ type: 'program', program: updated })}\n\n`);
+    } catch {
+      // Try to extract JSON object
+      const match = cleaned.match(/(\{[\s\S]+\})/);
+      if (match) {
+        const updated = JSON.parse(match[1]);
         store.setProgram(updated);
         res.write(`data: ${JSON.stringify({ type: 'program', program: updated })}\n\n`);
-      } catch {
+      } else {
         res.write(`data: ${JSON.stringify({ type: 'error', message: 'Failed to parse updated program' })}\n\n`);
       }
     }

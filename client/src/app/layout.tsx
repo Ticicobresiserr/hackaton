@@ -3,7 +3,7 @@ import NavBar from '@/components/NavBar';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'FlowPilot — AI Onboarding Agent',
+  title: 'Sherpa — AI Onboarding Agent',
   description: 'Upload your repo. Get an intelligent onboarding agent in minutes.',
 };
 

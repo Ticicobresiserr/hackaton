@@ -65,18 +65,7 @@ export default function ProgramPage() {
                   const updated = [...prev];
                   const last = updated[updated.length - 1];
                   if (last && last.role === 'assistant') {
-                    const raw = last.content + data.content;
-                    // Once we see the marker, stop adding any more text
-                    const markerIdx = raw.indexOf('===PROGRAM_JSON===');
-                    if (markerIdx >= 0) {
-                      updated[updated.length - 1] = { ...last, content: raw.slice(0, markerIdx).trim() };
-                    } else if (raw.includes('===PROGRAM')) {
-                      // Partial marker arriving — freeze display at safe point
-                      const safeIdx = raw.indexOf('===PROGRAM');
-                      updated[updated.length - 1] = { ...last, content: raw.slice(0, safeIdx).trim() };
-                    } else {
-                      updated[updated.length - 1] = { ...last, content: raw };
-                    }
+                    updated[updated.length - 1] = { ...last, content: last.content + data.content };
                   }
                   return updated;
                 });
