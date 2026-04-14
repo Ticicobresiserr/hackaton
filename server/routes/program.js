@@ -46,7 +46,7 @@ The user will ask to add, remove, or change onboarding flows and steps.
 Respond with a brief, friendly confirmation of what you'll change (2-3 sentences max).
 Do NOT output any JSON, code, or technical details. Just a natural language acknowledgment.`,
       messages: [{ role: 'user', content: message }],
-    }).catch((e) => { throw e; });
+    });
 
     const jsonPromise = client.messages.create({
       model: 'claude-haiku-4-5-20251001',
