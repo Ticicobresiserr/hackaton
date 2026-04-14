@@ -5,13 +5,11 @@ import { store } from '../store.js';
 export const router = Router();
 const client = new Anthropic();
 
-// Get current program
 router.get('/', (_req, res) => {
   const program = store.getProgram();
   res.json({ program, published: store.isPublished() });
 });
 
-// Publish program
 router.post('/publish', (_req, res) => {
   if (!store.getProgram()) {
     return res.status(400).json({ error: 'No program to publish' });
@@ -20,7 +18,6 @@ router.post('/publish', (_req, res) => {
   res.json({ ok: true });
 });
 
-// Refine program via chat
 router.post('/refine', async (req, res) => {
   const { message } = req.body;
   const currentProgram = store.getProgram();
@@ -36,63 +33,52 @@ router.post('/refine', async (req, res) => {
   res.flushHeaders();
 
   try {
-    // Run BOTH calls in parallel: conversational response + JSON update
-    // .catch() prevents unhandled rejection from crashing the server
-    const chatPromise = client.messages.stream({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 300,
-      system: `You are an assistant helping a platform owner refine their onboarding program.
-The user will ask to add, remove, or change onboarding flows and steps.
-Respond with a brief, friendly confirmation of what you'll change (2-3 sentences max).
-Do NOT output any JSON, code, or technical details. Just a natural language acknowledgment.`,
+    // Single Haiku call — responds conversationally AND outputs a JSON patch
+    const stream = await client.messages.stream({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1000,
+      system: `You help refine an onboarding program. Given the current program and a user request, respond in TWO parts:
+
+1. A brief confirmation (1-2 sentences, no JSON).
+2. Then the exact marker ===PATCH=== on its own line, followed by a JSON array of patch operations:
+
+Supported ops:
+- {"op":"remove_flow","flow_id":"flow_X"} — removes a flow
+- {"op":"remove_step","flow_id":"flow_X","step_id":"flow_X_step_Y"} — removes a step
+- {"op":"add_step","flow_id":"flow_X","after_step_id":"flow_X_step_Y","step":{"id":"...","title":"...","instruction":"...","explanation":"...","page":"...","order":N}} — adds a step
+- {"op":"update_step","flow_id":"flow_X","step_id":"flow_X_step_Y","updates":{"title":"...","instruction":"..."}} — modifies a step
+- {"op":"update_flow","flow_id":"flow_X","updates":{"name":"...","description":"..."}} — modifies a flow
+
+Current program flows: ${JSON.stringify(currentProgram.flows.map(f => ({ id: f.id, name: f.name, steps: f.steps.map(s => ({ id: s.id, title: s.title })) })))}`,
       messages: [{ role: 'user', content: message }],
     });
 
-    const jsonPromise = client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 4000,
-      system: `You modify onboarding programs based on user requests.
-Given the current program and the user's requested change, output ONLY the complete updated program as valid JSON. No explanation, no markdown fences, just the JSON object.
-The JSON must match the exact same schema as the input program.`,
-      messages: [
-        {
-          role: 'user',
-          content: `Current program:\n${JSON.stringify(currentProgram, null, 2)}\n\nRequested change: ${message}`,
-        },
-      ],
-    });
+    let fullText = '';
 
-    // Stream the chat response while JSON generates in background
-    const chatStream = await chatPromise;
-    for await (const event of chatStream) {
+    for await (const event of stream) {
       if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
-        res.write(`data: ${JSON.stringify({ type: 'text', content: event.delta.text })}\n\n`);
+        fullText += event.delta.text;
+        // Only stream text BEFORE the patch marker
+        if (!fullText.includes('===PATCH===')) {
+          res.write(`data: ${JSON.stringify({ type: 'text', content: event.delta.text })}\n\n`);
+        }
       }
     }
 
-    // Signal that program is updating
-    res.write(`data: ${JSON.stringify({ type: 'updating' })}\n\n`);
+    // Apply patch
+    const patchMarker = fullText.indexOf('===PATCH===');
+    if (patchMarker !== -1) {
+      const patchStr = fullText.slice(patchMarker + '===PATCH==='.length).trim()
+        .replace(/^```(?:json)?\s*/m, '').replace(/\s*```\s*$/m, '').trim();
 
-    // Wait for JSON result (may already be done since it ran in parallel)
-    const jsonResponse = await jsonPromise;
-    const jsonText = jsonResponse.content.find((b) => b.type === 'text')?.text ?? '';
-    const cleaned = jsonText
-      .replace(/^```(?:json)?\s*/m, '')
-      .replace(/\s*```\s*$/m, '')
-      .trim();
-
-    try {
-      const updated = JSON.parse(cleaned);
-      store.setProgram(updated);
-      res.write(`data: ${JSON.stringify({ type: 'program', program: updated })}\n\n`);
-    } catch {
-      const match = cleaned.match(/(\{[\s\S]+\})/);
-      if (match) {
-        const updated = JSON.parse(match[1]);
+      try {
+        const ops = JSON.parse(patchStr);
+        const updated = applyPatch(currentProgram, ops);
         store.setProgram(updated);
         res.write(`data: ${JSON.stringify({ type: 'program', program: updated })}\n\n`);
-      } else {
-        res.write(`data: ${JSON.stringify({ type: 'error', message: 'Failed to parse updated program' })}\n\n`);
+      } catch (e) {
+        console.error('[refine] Patch parse error:', e.message, patchStr.slice(0, 200));
+        res.write(`data: ${JSON.stringify({ type: 'error', message: 'Failed to apply changes' })}\n\n`);
       }
     }
 
@@ -103,3 +89,39 @@ The JSON must match the exact same schema as the input program.`,
     res.end();
   }
 });
+
+function applyPatch(program, ops) {
+  const updated = JSON.parse(JSON.stringify(program)); // deep clone
+
+  for (const op of ops) {
+    if (op.op === 'remove_flow') {
+      updated.flows = updated.flows.filter(f => f.id !== op.flow_id);
+    } else if (op.op === 'remove_step') {
+      const flow = updated.flows.find(f => f.id === op.flow_id);
+      if (flow) flow.steps = flow.steps.filter(s => s.id !== op.step_id);
+    } else if (op.op === 'add_step' && op.step) {
+      const flow = updated.flows.find(f => f.id === op.flow_id);
+      if (flow) {
+        const idx = op.after_step_id
+          ? flow.steps.findIndex(s => s.id === op.after_step_id) + 1
+          : flow.steps.length;
+        flow.steps.splice(idx, 0, op.step);
+      }
+    } else if (op.op === 'update_step' && op.updates) {
+      const flow = updated.flows.find(f => f.id === op.flow_id);
+      const step = flow?.steps.find(s => s.id === op.step_id);
+      if (step) Object.assign(step, op.updates);
+    } else if (op.op === 'update_flow' && op.updates) {
+      const flow = updated.flows.find(f => f.id === op.flow_id);
+      if (flow) Object.assign(flow, op.updates);
+    }
+  }
+
+  // Reorder
+  updated.flows.forEach((f, i) => {
+    f.order = i + 1;
+    f.steps.forEach((s, j) => { s.order = j + 1; });
+  });
+
+  return updated;
+}
