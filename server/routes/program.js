@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import { store } from '../store.js';
+import { broadcast } from '../sse.js';
 
 export const router = Router();
 const client = new Anthropic();
@@ -15,6 +16,7 @@ router.post('/publish', (_req, res) => {
     return res.status(400).json({ error: 'No program to publish' });
   }
   store.publish();
+  broadcast('published', { program: store.getProgram() });
   res.json({ ok: true });
 });
 

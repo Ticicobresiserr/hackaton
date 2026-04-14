@@ -7,105 +7,253 @@
   let progress = null;
   let started = false;
   let program = null;
+  let published = false;
   let isOpen = false;
+  let analyzing = false;
 
   // Fetch program on load
   fetch(SHERPA_API + '/api/program')
     .then(r => r.json())
-    .then(data => { program = data.program; });
+    .then(data => {
+      program = data.program;
+      published = data.published;
+      render();
+    });
+
+  // Connect to SSE for real-time updates (program ready, published, etc.)
+  const es = new EventSource(SHERPA_API + '/api/events');
+  es.addEventListener('program', (e) => {
+    const data = JSON.parse(e.data);
+    program = data.program;
+    analyzing = false;
+    render();
+  });
+  es.addEventListener('published', (e) => {
+    const data = JSON.parse(e.data);
+    program = data.program;
+    published = true;
+    render();
+    // Auto-open widget when published — the "magic moment"
+    if (!isOpen) {
+      isOpen = true;
+      panel.classList.add('open');
+    }
+  });
+  es.addEventListener('status', (e) => {
+    const data = JSON.parse(e.data);
+    if (data.state === 'analyzing') {
+      analyzing = true;
+      render();
+    }
+  });
 
   // === STYLES ===
   const style = document.createElement('style');
   style.textContent = `
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
     #sherpa-widget-btn {
       position: fixed; bottom: 24px; right: 24px; z-index: 99999;
       width: 56px; height: 56px; border-radius: 16px;
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
-      border: none; cursor: pointer; box-shadow: 0 8px 32px rgba(99,102,241,0.4);
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      border: none; cursor: pointer;
+      box-shadow: 0 8px 32px rgba(249,115,22,0.35);
       display: flex; align-items: center; justify-content: center;
       transition: transform 0.2s, box-shadow 0.2s;
     }
-    #sherpa-widget-btn:hover { transform: scale(1.08); box-shadow: 0 12px 40px rgba(99,102,241,0.5); }
-    #sherpa-widget-btn svg { width: 26px; height: 26px; fill: white; }
+    #sherpa-widget-btn:hover {
+      transform: scale(1.08);
+      box-shadow: 0 12px 40px rgba(249,115,22,0.5);
+    }
+    #sherpa-widget-btn.waiting {
+      background: linear-gradient(135deg, #374151, #4b5563);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    #sherpa-widget-btn.pulse {
+      animation: sherpa-btn-pulse 2s ease-in-out infinite;
+    }
+    @keyframes sherpa-btn-pulse {
+      0%, 100% { box-shadow: 0 8px 32px rgba(249,115,22,0.35); }
+      50% { box-shadow: 0 8px 48px rgba(249,115,22,0.6); }
+    }
+    #sherpa-widget-btn svg { width: 26px; height: 26px; fill: none; stroke: white; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
     #sherpa-widget-panel {
       position: fixed; bottom: 92px; right: 24px; z-index: 99999;
-      width: 380px; height: 520px; border-radius: 20px;
-      background: #0a0a0f; border: 1px solid rgba(255,255,255,0.08);
-      box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+      width: 380px; height: 540px; border-radius: 20px;
+      background: #0c0c14; border: 1px solid rgba(249,115,22,0.12);
+      box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 40px rgba(249,115,22,0.06);
       display: none; flex-direction: column; overflow: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
-    #sherpa-widget-panel.open { display: flex; }
+    #sherpa-widget-panel.open { display: flex; animation: sherpa-slide-up 0.25s ease-out; }
+    @keyframes sherpa-slide-up {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
     .sherpa-header {
       padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.06);
-      background: rgba(255,255,255,0.02);
+      background: rgba(249,115,22,0.03);
+      display: flex; align-items: center; gap: 10px;
     }
-    .sherpa-header-title { font-size: 14px; font-weight: 700; color: #fff; margin: 0; }
+    .sherpa-header-icon {
+      width: 32px; height: 32px; border-radius: 10px;
+      background: linear-gradient(135deg, rgba(249,115,22,0.15), rgba(234,88,12,0.08));
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .sherpa-header-icon svg { width: 16px; height: 16px; fill: none; stroke: #fb923c; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .sherpa-header-text { flex: 1; }
+    .sherpa-header-title {
+      font-size: 14px; font-weight: 700; color: #fff; margin: 0;
+      background: linear-gradient(135deg, #fb923c, #f97316);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
     .sherpa-header-sub { font-size: 11px; color: #6b7280; margin-top: 2px; }
 
     .sherpa-progress { padding: 12px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); }
-    .sherpa-progress-bar { width: 100%; height: 4px; background: #1f1f2e; border-radius: 4px; overflow: hidden; }
-    .sherpa-progress-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #a78bfa); border-radius: 4px; transition: width 0.5s; }
+    .sherpa-progress-bar { width: 100%; height: 4px; background: #1a1a28; border-radius: 4px; overflow: hidden; }
+    .sherpa-progress-fill {
+      height: 100%; border-radius: 4px; transition: width 0.5s ease;
+      background: linear-gradient(90deg, #f97316, #fb923c);
+    }
+    .sherpa-progress-fill.complete { background: linear-gradient(90deg, #22c55e, #4ade80); }
     .sherpa-progress-text { font-size: 11px; color: #6b7280; margin-top: 6px; display: flex; justify-content: space-between; }
+    .sherpa-progress-pct { color: #fb923c; font-weight: 600; }
+    .sherpa-progress-pct.complete { color: #4ade80; }
 
     .sherpa-messages {
-      flex: 1; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 12px;
+      flex: 1; overflow-y: auto; padding: 16px 20px;
+      display: flex; flex-direction: column; gap: 12px;
     }
-    .sherpa-msg { max-width: 85%; padding: 10px 14px; border-radius: 16px; font-size: 13px; line-height: 1.5; word-wrap: break-word; }
-    .sherpa-msg.user { align-self: flex-end; background: linear-gradient(135deg, #6366f1, #7c3aed); color: #fff; border-bottom-right-radius: 6px; }
-    .sherpa-msg.assistant { align-self: flex-start; background: #16161f; color: #e5e7eb; border: 1px solid rgba(255,255,255,0.06); border-bottom-left-radius: 6px; }
-    .sherpa-msg.assistant .sherpa-typing { display: inline-flex; gap: 3px; margin-left: 4px; }
-    .sherpa-msg.assistant .sherpa-typing span {
-      width: 5px; height: 5px; border-radius: 50%; background: #6366f1;
+    .sherpa-messages::-webkit-scrollbar { width: 4px; }
+    .sherpa-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+    .sherpa-msg-row { display: flex; gap: 8px; }
+    .sherpa-msg-row.user { justify-content: flex-end; }
+    .sherpa-msg-row.assistant { justify-content: flex-start; }
+
+    .sherpa-avatar {
+      width: 24px; height: 24px; border-radius: 8px; flex-shrink: 0; margin-top: 2px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sherpa-avatar.bot {
+      background: linear-gradient(135deg, rgba(249,115,22,0.15), rgba(234,88,12,0.08));
+    }
+    .sherpa-avatar.bot svg { width: 12px; height: 12px; fill: none; stroke: #fb923c; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .sherpa-msg {
+      max-width: 80%; padding: 10px 14px; font-size: 13px; line-height: 1.55; word-wrap: break-word;
+    }
+    .sherpa-msg.user {
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: #fff; border-radius: 16px 16px 6px 16px;
+    }
+    .sherpa-msg.assistant {
+      background: #13131f; color: #e5e7eb;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px 16px 16px 6px;
+    }
+
+    .sherpa-typing { display: inline-flex; gap: 3px; margin-left: 4px; vertical-align: middle; }
+    .sherpa-typing span {
+      width: 5px; height: 5px; border-radius: 50%; background: #fb923c;
       animation: sherpa-bounce 1.2s infinite;
     }
-    .sherpa-msg.assistant .sherpa-typing span:nth-child(2) { animation-delay: 0.15s; }
-    .sherpa-msg.assistant .sherpa-typing span:nth-child(3) { animation-delay: 0.3s; }
-    @keyframes sherpa-bounce { 0%,80%,100% { opacity: 0.3; } 40% { opacity: 1; } }
+    .sherpa-typing span:nth-child(2) { animation-delay: 0.15s; }
+    .sherpa-typing span:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes sherpa-bounce {
+      0%,80%,100% { opacity: 0.3; transform: translateY(0); }
+      40% { opacity: 1; transform: translateY(-3px); }
+    }
 
     .sherpa-input-area {
       padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.06);
-      display: flex; gap: 8px;
+      display: flex; gap: 8px; background: rgba(255,255,255,0.01);
     }
     .sherpa-input {
-      flex: 1; background: #16161f; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
-      padding: 10px 14px; color: #e5e7eb; font-size: 13px; outline: none;
+      flex: 1; background: #13131f; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
+      padding: 10px 14px; color: #e5e7eb; font-size: 13px; font-family: inherit; outline: none;
       transition: border-color 0.2s;
     }
-    .sherpa-input:focus { border-color: rgba(99,102,241,0.4); }
+    .sherpa-input:focus { border-color: rgba(249,115,22,0.4); }
     .sherpa-input::placeholder { color: #374151; }
     .sherpa-send {
-      background: linear-gradient(135deg, #6366f1, #7c3aed); border: none; border-radius: 12px;
+      background: linear-gradient(135deg, #f97316, #ea580c); border: none; border-radius: 12px;
       width: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-      transition: opacity 0.2s;
+      transition: opacity 0.2s; box-shadow: 0 2px 8px rgba(249,115,22,0.2);
     }
-    .sherpa-send:disabled { opacity: 0.4; cursor: not-allowed; }
+    .sherpa-send:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
     .sherpa-send svg { width: 16px; height: 16px; fill: white; }
 
-    .sherpa-welcome { padding: 32px 24px; text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; }
-    .sherpa-welcome h3 { color: #fff; font-size: 18px; font-weight: 700; margin: 0 0 8px; }
-    .sherpa-welcome p { color: #6b7280; font-size: 13px; margin: 0 0 20px; line-height: 1.5; }
+    .sherpa-welcome {
+      padding: 32px 24px; text-align: center; flex: 1;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+    }
+    .sherpa-welcome-icon {
+      width: 56px; height: 56px; border-radius: 16px; margin-bottom: 16px;
+      background: linear-gradient(135deg, rgba(249,115,22,0.15), rgba(234,88,12,0.08));
+      border: 1px solid rgba(249,115,22,0.12);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sherpa-welcome-icon svg { width: 28px; height: 28px; fill: none; stroke: #fb923c; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .sherpa-welcome-icon.waiting svg { stroke: #6b7280; }
+    .sherpa-welcome-icon.waiting {
+      background: linear-gradient(135deg, rgba(107,114,128,0.1), rgba(75,85,99,0.05));
+      border-color: rgba(107,114,128,0.12);
+    }
+    .sherpa-welcome h3 {
+      color: #fff; font-size: 20px; font-weight: 700; margin: 0 0 6px;
+    }
+    .sherpa-welcome p { color: #6b7280; font-size: 13px; margin: 0 0 24px; line-height: 1.6; max-width: 280px; }
     .sherpa-welcome input {
-      width: 100%; background: #16161f; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
-      padding: 10px 14px; color: #e5e7eb; font-size: 13px; outline: none; margin-bottom: 12px; box-sizing: border-box;
+      width: 100%; background: #13131f; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
+      padding: 12px 14px; color: #e5e7eb; font-size: 13px; font-family: inherit; outline: none;
+      margin-bottom: 12px; box-sizing: border-box; transition: border-color 0.2s;
     }
-    .sherpa-welcome input:focus { border-color: rgba(99,102,241,0.4); }
-    .sherpa-welcome button {
+    .sherpa-welcome input:focus { border-color: rgba(249,115,22,0.4); }
+    .sherpa-welcome input::placeholder { color: #374151; }
+    .sherpa-welcome .sherpa-start-btn {
       width: 100%; padding: 12px; border: none; border-radius: 12px;
-      background: linear-gradient(135deg, #6366f1, #7c3aed); color: #fff;
-      font-size: 13px; font-weight: 600; cursor: pointer;
-      transition: opacity 0.2s;
+      background: linear-gradient(135deg, #f97316, #ea580c); color: #fff;
+      font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer;
+      transition: opacity 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 16px rgba(249,115,22,0.25);
     }
-    .sherpa-welcome button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .sherpa-welcome .sherpa-start-btn:hover { box-shadow: 0 6px 24px rgba(249,115,22,0.35); }
+    .sherpa-welcome .sherpa-start-btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+    .sherpa-welcome .sherpa-meta { margin-top: 16px; font-size: 11px; color: #4b5563; }
+
+    .sherpa-powered {
+      padding: 8px 20px; text-align: center; font-size: 10px; color: #374151;
+      border-top: 1px solid rgba(255,255,255,0.04);
+    }
+    .sherpa-powered span { color: #fb923c; font-weight: 600; }
+
+    .sherpa-spinner {
+      width: 20px; height: 20px; border: 2px solid rgba(249,115,22,0.2);
+      border-top-color: #fb923c; border-radius: 50%;
+      animation: sherpa-spin 0.8s linear infinite; margin: 0 auto 12px;
+    }
+    @keyframes sherpa-spin { to { transform: rotate(360deg); } }
+
+    .sherpa-status-dot {
+      display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px;
+    }
+    .sherpa-status-dot.analyzing { background: #818cf8; animation: sherpa-dot-pulse 1.5s ease-in-out infinite; }
+    .sherpa-status-dot.ready { background: #4ade80; }
+    @keyframes sherpa-dot-pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
   `;
   document.head.appendChild(style);
+
+  // Mountain SVG icon
+  const mountainSvg = '<svg viewBox="0 0 24 24"><path d="m8 3 4 8 5-5 5 16H2L8 3z"/></svg>';
+  const sendSvg = '<svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>';
 
   // === BUTTON ===
   const btn = document.createElement('button');
   btn.id = 'sherpa-widget-btn';
-  btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M13 3L4 14h7l-2 7 9-11h-7l2-7z"/></svg>';
+  btn.innerHTML = mountainSvg;
   btn.onclick = () => { isOpen = !isOpen; panel.classList.toggle('open', isOpen); };
   document.body.appendChild(btn);
 
@@ -114,20 +262,63 @@
   panel.id = 'sherpa-widget-panel';
   document.body.appendChild(panel);
 
+  function updateButtonState() {
+    btn.classList.remove('waiting', 'pulse');
+    if (!program || !published) {
+      btn.classList.add('waiting');
+    } else if (published && !started) {
+      btn.classList.add('pulse');
+    }
+  }
+
   function render() {
-    if (!program) {
-      panel.innerHTML = '<div class="sherpa-welcome"><h3>Sherpa</h3><p>Loading onboarding program...</p></div>';
+    updateButtonState();
+
+    // State: No program yet, analyzing
+    if (!program && analyzing) {
+      panel.innerHTML = `
+        <div class="sherpa-welcome">
+          <div class="sherpa-welcome-icon waiting">${mountainSvg}</div>
+          <h3>Sherpa</h3>
+          <div class="sherpa-spinner"></div>
+          <p><span class="sherpa-status-dot analyzing"></span>AI is analyzing this codebase. Your onboarding guide will be ready shortly.</p>
+        </div>`;
       return;
     }
 
+    // State: No program yet
+    if (!program) {
+      panel.innerHTML = `
+        <div class="sherpa-welcome">
+          <div class="sherpa-welcome-icon waiting">${mountainSvg}</div>
+          <h3>Sherpa</h3>
+          <p>No onboarding program yet. The app owner needs to analyze and publish one first.</p>
+        </div>`;
+      return;
+    }
+
+    // State: Program exists but not published
+    if (!published) {
+      panel.innerHTML = `
+        <div class="sherpa-welcome">
+          <div class="sherpa-welcome-icon waiting">${mountainSvg}</div>
+          <h3>Almost ready</h3>
+          <p><span class="sherpa-status-dot ready"></span>Onboarding program detected for <strong style="color:#e5e7eb">${escapeHtml(program.platformName)}</strong>. Waiting for the owner to publish it.</p>
+          <div class="sherpa-meta">${program.flows.length} flows &middot; ${program.flows.reduce((s,f) => s + f.steps.length, 0)} steps ready</div>
+        </div>`;
+      return;
+    }
+
+    // State: Published, waiting for user to start
     if (!started) {
       panel.innerHTML = `
         <div class="sherpa-welcome">
-          <h3>Welcome to ${program.platformName}</h3>
-          <p>${program.platformDescription}</p>
+          <div class="sherpa-welcome-icon">${mountainSvg}</div>
+          <h3>Welcome to ${escapeHtml(program.platformName)}</h3>
+          <p>${escapeHtml(program.platformDescription)}</p>
           <input type="text" id="sherpa-name-input" placeholder="Enter your name..." />
-          <button id="sherpa-start-btn" ${!userName ? 'disabled' : ''}>Start Onboarding</button>
-          <p style="margin-top:12px;font-size:11px;color:#4b5563">${program.flows.length} flows &middot; ${program.flows.reduce((s,f) => s + f.steps.length, 0)} steps</p>
+          <button class="sherpa-start-btn" id="sherpa-start-btn" ${!userName ? 'disabled' : ''}>Start Onboarding</button>
+          <div class="sherpa-meta">${program.flows.length} flows &middot; ${program.flows.reduce((s,f) => s + f.steps.length, 0)} steps</div>
         </div>
       `;
       const nameInput = panel.querySelector('#sherpa-name-input');
@@ -138,6 +329,7 @@
       return;
     }
 
+    // State: Active onboarding chat
     const totalSteps = program.flows.reduce((s,f) => s + f.steps.length, 0);
     const completedCount = progress ? progress.completedSteps.length : 0;
     const pct = Math.round((completedCount / totalSteps) * 100);
@@ -147,34 +339,61 @@
 
     let html = `
       <div class="sherpa-header">
-        <p class="sherpa-header-title">Sherpa</p>
-        <p class="sherpa-header-sub">${isComplete ? 'Onboarding complete!' : currentFlow ? currentFlow.name : 'Getting started...'}</p>
+        <div class="sherpa-header-icon">${mountainSvg}</div>
+        <div class="sherpa-header-text">
+          <p class="sherpa-header-title">Sherpa</p>
+          <p class="sherpa-header-sub">${isComplete ? 'Onboarding complete!' : currentFlow ? escapeHtml(currentFlow.name) : 'Getting started...'}</p>
+        </div>
       </div>
       <div class="sherpa-progress">
-        <div class="sherpa-progress-bar"><div class="sherpa-progress-fill" style="width:${pct}%"></div></div>
+        <div class="sherpa-progress-bar"><div class="sherpa-progress-fill${isComplete ? ' complete' : ''}" style="width:${pct}%"></div></div>
         <div class="sherpa-progress-text">
-          <span>${isComplete ? 'All done!' : currentStep ? 'Step ' + ((progress?.currentStepIndex ?? 0) + 1) + ': ' + currentStep.title : ''}</span>
-          <span>${pct}%</span>
+          <span>${isComplete ? 'All done!' : currentStep ? 'Step ' + ((progress?.currentStepIndex ?? 0) + 1) + ': ' + escapeHtml(currentStep.title) : ''}</span>
+          <span class="sherpa-progress-pct${isComplete ? ' complete' : ''}">${pct}%</span>
         </div>
       </div>
       <div class="sherpa-messages" id="sherpa-messages">
     `;
 
     for (const msg of messages) {
-      html += `<div class="sherpa-msg ${msg.role}">${escapeHtml(msg.content)}`;
-      if (msg.role === 'assistant' && streaming && msg === messages[messages.length - 1]) {
-        html += '<span class="sherpa-typing"><span></span><span></span><span></span></span>';
+      if (msg.role === 'user') {
+        html += `<div class="sherpa-msg-row user">`;
+        html += `<div class="sherpa-msg user">${escapeHtml(msg.content)}</div></div>`;
+      } else {
+        // Split assistant messages on ||| into separate bubbles
+        const isLast = msg === messages[messages.length - 1];
+        const parts = msg.content.split('|||').map(p => p.trim()).filter(Boolean);
+        if (parts.length === 0 && streaming && isLast) {
+          // Empty streaming message — show typing indicator
+          html += `<div class="sherpa-msg-row assistant">`;
+          html += `<div class="sherpa-avatar bot">${mountainSvg}</div>`;
+          html += `<div class="sherpa-msg assistant"><span class="sherpa-typing"><span></span><span></span><span></span></span></div></div>`;
+        } else {
+          for (let p = 0; p < parts.length; p++) {
+            html += `<div class="sherpa-msg-row assistant">`;
+            if (p === 0) {
+              html += `<div class="sherpa-avatar bot">${mountainSvg}</div>`;
+            } else {
+              html += `<div class="sherpa-avatar" style="visibility:hidden"></div>`;
+            }
+            html += `<div class="sherpa-msg assistant">${formatMsg(parts[p])}</div></div>`;
+          }
+          // Show typing dots as a separate bubble below while streaming
+          if (streaming && isLast) {
+            html += `<div class="sherpa-msg-row assistant">`;
+            html += `<div class="sherpa-avatar" style="visibility:hidden"></div>`;
+            html += `<div class="sherpa-msg assistant"><span class="sherpa-typing"><span></span><span></span><span></span></span></div></div>`;
+          }
+        }
       }
-      html += '</div>';
     }
 
     html += `</div>
       <div class="sherpa-input-area">
         <input class="sherpa-input" id="sherpa-chat-input" placeholder="Type a message or 'done'..." ${streaming ? 'disabled' : ''} />
-        <button class="sherpa-send" id="sherpa-send-btn" ${streaming ? 'disabled' : ''}>
-          <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-        </button>
+        <button class="sherpa-send" id="sherpa-send-btn" ${streaming ? 'disabled' : ''}>${sendSvg}</button>
       </div>
+      <div class="sherpa-powered">Guided by <span>Sherpa</span></div>
     `;
 
     panel.innerHTML = html;
@@ -186,6 +405,14 @@
     const sendBtn = panel.querySelector('#sherpa-send-btn');
     input.addEventListener('keydown', e => { if (e.key === 'Enter' && input.value.trim() && !streaming) sendMessage(input.value.trim()); });
     sendBtn.addEventListener('click', () => { if (input.value.trim() && !streaming) sendMessage(input.value.trim()); });
+    input.focus();
+  }
+
+  function formatMsg(s) {
+    // Escape HTML, then convert **bold** markdown and newlines
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/\*\*(.+?)\*\*/g, '<strong style="color:#fb923c">$1</strong>')
+      .replace(/\n/g,'<br>');
   }
 
   function escapeHtml(s) {
@@ -199,6 +426,15 @@
     sendMessage(`Hi, I'm ${userName.trim()}. I'm ready to start the onboarding.`);
   }
 
+  function getPageContext() {
+    const title = document.title || '';
+    const headings = [...document.querySelectorAll('h1,h2,h3')].slice(0, 10).map(h => h.textContent.trim()).filter(Boolean);
+    const buttons = [...document.querySelectorAll('button,a[class*="bg-"]')].slice(0, 15).map(b => b.textContent.trim()).filter(t => t && t.length < 50);
+    const inputs = [...document.querySelectorAll('input,select,textarea')].slice(0, 10).map(i => i.placeholder || i.name || i.type).filter(Boolean);
+    const navLinks = [...document.querySelectorAll('nav a, aside a')].map(a => a.textContent.trim()).filter(Boolean);
+    return { title, headings, buttons, inputs, navLinks, url: window.location.href };
+  }
+
   async function sendMessage(text) {
     if (streaming) return;
     messages.push({ role: 'user', content: text });
@@ -206,11 +442,13 @@
     streaming = true;
     render();
 
+    const pageContext = getPageContext();
+
     try {
       const res = await fetch(SHERPA_API + '/api/onboard/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, userName, message: text, currentUrl: window.location.href }),
+        body: JSON.stringify({ sessionId, userName, message: text, currentUrl: window.location.href, pageContext }),
       });
 
       const reader = res.body.getReader();

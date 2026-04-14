@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Rocket, MessageSquare, ExternalLink, FileCode2 } from 'lucide-react';
+import { Rocket, MessageSquare, CheckCircle2, FileCode2 } from 'lucide-react';
 import FlowCard from '@/components/FlowCard';
 import ChatPanel, { ChatMessage } from '@/components/ChatPanel';
 import type { OnboardingProgram } from '@/hooks/useSSE';
@@ -165,17 +165,6 @@ export default function ProgramPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {published && (
-            <a
-              href="/onboard"
-              className="inline-flex items-center gap-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1]
-                border border-white/[0.08] px-4 py-2.5 text-sm font-medium text-gray-300
-                hover:text-white transition-all duration-200"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              Open Onboarding
-            </a>
-          )}
           {!published ? (
             <button
               onClick={handlePublish}
@@ -188,8 +177,8 @@ export default function ProgramPage() {
             </button>
           ) : (
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
-              Live
+              <CheckCircle2 className="w-3 h-3" />
+              Published
             </span>
           )}
         </div>
