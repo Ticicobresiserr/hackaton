@@ -37,6 +37,7 @@ router.post('/refine', async (req, res) => {
 
   try {
     // Run BOTH calls in parallel: conversational response + JSON update
+    // .catch() prevents unhandled rejection from crashing the server
     const chatPromise = client.messages.stream({
       model: 'claude-sonnet-4-6',
       max_tokens: 300,
@@ -45,7 +46,7 @@ The user will ask to add, remove, or change onboarding flows and steps.
 Respond with a brief, friendly confirmation of what you'll change (2-3 sentences max).
 Do NOT output any JSON, code, or technical details. Just a natural language acknowledgment.`,
       messages: [{ role: 'user', content: message }],
-    });
+    }).catch((e) => { throw e; });
 
     const jsonPromise = client.messages.create({
       model: 'claude-haiku-4-5-20251001',
