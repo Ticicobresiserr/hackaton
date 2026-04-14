@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskFlow — Website Redesign</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { theme: { extend: { colors: { brand: { 50:'#eff6ff',100:'#dbeafe',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',900:'#1e3a5f' }}}}}</script>
+</head>
+<body class="min-h-screen bg-gray-950 text-gray-100">
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-56 bg-gray-900 border-r border-gray-800 p-4 flex flex-col">
+      <h1 class="text-lg font-bold text-white mb-6 px-2">TaskFlow</h1>
+      <nav class="space-y-1 flex-1">
+        <a href="dashboard.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 text-sm">
+          <span>&#9636;</span> Dashboard
+        </a>
+        <a href="new-project.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 text-sm">
+          <span>&#43;</span> New Project
+        </a>
+        <a href="team.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 text-sm">
+          <span>&#128101;</span> Team
+        </a>
+        <a href="settings.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 text-sm">
+          <span>&#9881;</span> Settings
+        </a>
+      </nav>
+      <div class="border-t border-gray-800 pt-3 mt-3">
+        <div class="flex items-center gap-3 px-2">
+          <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-xs font-bold">DU</div>
+          <div>
+            <p class="text-sm text-gray-200">Demo User</p>
+            <p class="text-xs text-gray-500">demo@taskflow.io</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 p-8">
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+          <span class="w-3 h-3 rounded-full bg-green-500"></span>
+          <h2 class="text-2xl font-bold text-white">Website Redesign</h2>
+        </div>
+        <button onclick="document.getElementById('newTaskModal').classList.remove('hidden')" class="rounded-lg bg-brand-600 hover:bg-brand-500 px-4 py-2 text-sm font-semibold text-white transition-colors">
+          + Add Task
+        </button>
+      </div>
+
+      <p class="text-sm text-gray-400 mb-6">Complete overhaul of the marketing website with new branding.</p>
+
+      <!-- Task columns -->
+      <div class="grid grid-cols-3 gap-6">
+        <!-- To Do -->
+        <div>
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-2 h-2 rounded-full bg-gray-500"></span>
+            <h3 class="text-sm font-semibold text-gray-300 uppercase tracking-wider">To Do</h3>
+            <span class="text-xs text-gray-600 ml-auto">4</span>
+          </div>
+          <div class="space-y-2">
+            <div class="rounded-lg border border-gray-800 bg-gray-900 p-3 hover:border-gray-600 cursor-pointer">
+              <p class="text-sm text-gray-200 font-medium">Design new homepage mockup</p>
+              <div class="flex items-center justify-between mt-2">
+                <span class="text-xs text-orange-400 bg-orange-950 px-2 py-0.5 rounded">High</span>
+                <div class="w-5 h-5 rounded-full bg-blue-900 flex items-center justify-center text-xs text-blue-300">A</div>
+              </div>
+            </div>
+            <div class="rounded-lg border border-gray-800 bg-gray-900 p-3 hover:border-gray-600 cursor-pointer">
+              <p class="text-sm text-gray-200 font-medium">Write SEO meta descriptions</p>
+              <div class="flex items-center justify-between mt-2">
+                <span class="text-xs text-gray-400 bg-gray-800 px-2 py-0.5 rounded">Low</span>
+                <div class="w-5 h-5 rounded-full bg-purple-900 flex items-center justify-center text-xs text-purple-300">C</div>
+              </div>
+            </div>
+            <div class="rounded-lg border border-gray-800 bg-gray-900 p-3 hover:border-gray-600 cursor-pointer">
+              <p class="text-sm text-gray-200 font-medium">Setup analytics tracking</p>
+              <div class="flex items-center justify-between mt-2">
+                <span class="text-xs text-yellow-400 bg-yellow-950 px-2 py-0.5 rounded">Medium</span>
+                <div class="w-5 h-5 rounded-full bg-green-900 flex items-center justify-center text-xs text-green-300">B</div>
+              </div>
+            </div>
+            <div class="rounded-lg border border-gray-800 bg-gray-900 p-3 hover:border-gray-600 cursor-pointer">
+              <p class="text-sm text-gray-200 font-medium">Create contact form</p>
+              <div class="flex items-center justify-between mt-2">
+                <span class="text-xs text-yellow-400 bg-yellow-950 px-2 py-0.5 rounded">Medium</span>
+                <div class="w-5 h-5 rounded-full bg-blue-900 flex items-center justify-center text-xs text-blue-300">A</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- In Progress -->
+        <div>
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+            <h3 class="text-sm font-semibold text-gray-300 uppercase tracking-wider">In Progress</h3>
+            <span class="text-xs text-gray-600 ml-auto">3</span>
+          </div>
+          <div class="space-y-2">
+            <div class="rounded-lg border border-blue-800/50 bg-gray-900 p-3">
+              <p class="text-sm text-gray-200 font-medium">Update brand colors and typography</p>
+              <div class="flex items-center justify-between mt-2">
+                <span class="text-xs text-orange-400 bg-orange-950 px-2 py-0.5 rounded">High</span>
+                <div class="w-5 h-5 rounded-full bg-blue-900 flex items-center justify-center text-xs text-blue-300">A</div>
+              </div>
+            </div>
+            <div class="rounded-lg border border-blue-800/50 bg-gray-900 p-3">
+              <p class="text-sm text-gray-200 font-medium">Implement responsive navigation</p>
+              <div class="flex items-center justify-between mt-2">
+                <span class="text-xs text-orange-400 bg-orange-950 px-2 py-0.5 rounded">High</span>
+                <div class="w-5 h-5 rounded-full bg-green-900 flex items-center justify-center text-xs text-green-300">B</div>
+              </div>
+            </div>
+            <div class="rounded-lg border border-blue-800/50 bg-gray-900 p-3">
+              <p class="text-sm text-gray-200 font-medium">Migrate blog to new CMS</p>
+              <div class="flex items-center justify-between mt-2">
+                <span class="text-xs text-yellow-400 bg-yellow-950 px-2 py-0.5 rounded">Medium</span>
+                <div class="w-5 h-5 rounded-full bg-purple-900 flex items-center justify-center text-xs text-purple-300">C</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Done -->
+        <div>
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-2 h-2 rounded-full bg-green-500"></span>
+            <h3 class="text-sm font-semibold text-gray-300 uppercase tracking-wider">Done</h3>
+            <span class="text-xs text-gray-600 ml-auto">5</span>
+          </div>
+          <div class="space-y-2">
+            <div class="rounded-lg border border-gray-800 bg-gray-900/50 p-3 opacity-75">
+              <p class="text-sm text-gray-400 font-medium line-through">Setup new domain and hosting</p>
+              <div class="flex items-center justify-between mt-2">
+                <span class="text-xs text-green-400">Completed</span>
+                <div class="w-5 h-5 rounded-full bg-green-900 flex items-center justify-center text-xs text-green-300">B</div>
+              </div>
+            </div>
+            <div class="rounded-lg border border-gray-800 bg-gray-900/50 p-3 opacity-75">
+              <p class="text-sm text-gray-400 font-medium line-through">Create wireframes for all pages</p>
+              <div class="flex items-center justify-between mt-2">
+                <span class="text-xs text-green-400">Completed</span>
+                <div class="w-5 h-5 rounded-full bg-blue-900 flex items-center justify-center text-xs text-blue-300">A</div>
+              </div>
+            </div>
+            <div class="rounded-lg border border-gray-800 bg-gray-900/50 p-3 opacity-75">
+              <p class="text-sm text-gray-400 font-medium line-through">Audit existing content</p>
+              <div class="flex items-center justify-between mt-2">
+                <span class="text-xs text-green-400">Completed</span>
+                <div class="w-5 h-5 rounded-full bg-purple-900 flex items-center justify-center text-xs text-purple-300">C</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- New Task Modal (hidden by default) -->
+      <div id="newTaskModal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+        <div class="bg-gray-900 border border-gray-700 rounded-2xl p-6 w-full max-w-md mx-4">
+          <h3 class="text-lg font-semibold text-white mb-4">Add New Task</h3>
+          <form onsubmit="event.preventDefault(); document.getElementById('newTaskModal').classList.add('hidden');">
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-300 mb-1.5">Task Title</label>
+              <input type="text" placeholder="What needs to be done?" class="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-300 mb-1.5">Priority</label>
+              <select class="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                <option>Low</option>
+                <option>Medium</option>
+                <option selected>High</option>
+              </select>
+            </div>
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-300 mb-1.5">Assign to</label>
+              <select class="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                <option>Alice (you)</option>
+                <option>Bob</option>
+                <option>Carol</option>
+              </select>
+            </div>
+            <div class="flex gap-3 mt-6">
+              <button type="submit" class="flex-1 rounded-lg bg-brand-600 hover:bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white">Create Task</button>
+              <button type="button" onclick="document.getElementById('newTaskModal').classList.add('hidden')" class="flex-1 rounded-lg border border-gray-700 px-4 py-2.5 text-sm text-gray-300">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskFlow — Team</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { theme: { extend: { colors: { brand: { 50:'#eff6ff',100:'#dbeafe',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',900:'#1e3a5f' }}}}}</script>
+</head>
+<body class="min-h-screen bg-gray-950 text-gray-100">
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-56 bg-gray-900 border-r border-gray-800 p-4 flex flex-col">
+      <h1 class="text-lg font-bold text-white mb-6 px-2">TaskFlow</h1>
+      <nav class="space-y-1 flex-1">
+        <a href="dashboard.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 text-sm">
+          <span>&#9636;</span> Dashboard
+        </a>
+        <a href="new-project.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 text-sm">
+          <span>&#43;</span> New Project
+        </a>
+        <a href="team.html" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-brand-600/20 text-brand-500 text-sm font-medium">
+          <span>&#128101;</span> Team
+        </a>
+        <a href="settings.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 text-sm">
+          <span>&#9881;</span> Settings
+        </a>
+      </nav>
+      <div class="border-t border-gray-800 pt-3 mt-3">
+        <div class="flex items-center gap-3 px-2">
+          <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-xs font-bold">DU</div>
+          <div>
+            <p class="text-sm text-gray-200">Demo User</p>
+            <p class="text-xs text-gray-500">demo@taskflow.io</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 p-8">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h2 class="text-2xl font-bold text-white">Team Members</h2>
+          <p class="text-sm text-gray-400 mt-1">Manage your team and invite new members</p>
+        </div>
+        <button onclick="document.getElementById('inviteModal').classList.remove('hidden')" class="rounded-lg bg-brand-600 hover:bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors">
+          + Invite Member
+        </button>
+      </div>
+
+      <!-- Team members list -->
+      <div class="space-y-3">
+        <div class="flex items-center gap-4 rounded-xl border border-gray-800 bg-gray-900/50 p-4">
+          <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-sm font-bold">AL</div>
+          <div class="flex-1">
+            <p class="text-gray-200 font-medium">Alice Johnson</p>
+            <p class="text-xs text-gray-500">alice@taskflow.io</p>
+          </div>
+          <span class="px-3 py-1 rounded-full bg-brand-600/20 text-brand-500 text-xs font-medium">Admin</span>
+          <span class="text-xs text-green-400">Active</span>
+        </div>
+
+        <div class="flex items-center gap-4 rounded-xl border border-gray-800 bg-gray-900/50 p-4">
+          <div class="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-sm font-bold">BW</div>
+          <div class="flex-1">
+            <p class="text-gray-200 font-medium">Bob Williams</p>
+            <p class="text-xs text-gray-500">bob@taskflow.io</p>
+          </div>
+          <span class="px-3 py-1 rounded-full bg-gray-700 text-gray-300 text-xs font-medium">Member</span>
+          <span class="text-xs text-green-400">Active</span>
+        </div>
+
+        <div class="flex items-center gap-4 rounded-xl border border-gray-800 bg-gray-900/50 p-4">
+          <div class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-sm font-bold">CD</div>
+          <div class="flex-1">
+            <p class="text-gray-200 font-medium">Carol Davis</p>
+            <p class="text-xs text-gray-500">carol@taskflow.io</p>
+          </div>
+          <span class="px-3 py-1 rounded-full bg-gray-700 text-gray-300 text-xs font-medium">Member</span>
+          <span class="text-xs text-gray-500">Last seen 2h ago</span>
+        </div>
+
+        <div class="flex items-center gap-4 rounded-xl border border-gray-800 bg-gray-900/50 p-4 opacity-60">
+          <div class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-sm font-bold text-gray-400">?</div>
+          <div class="flex-1">
+            <p class="text-gray-400 font-medium">david@company.com</p>
+            <p class="text-xs text-gray-600">Invitation sent</p>
+          </div>
+          <span class="px-3 py-1 rounded-full bg-yellow-950 text-yellow-400 text-xs font-medium">Pending</span>
+          <button class="text-xs text-gray-500 hover:text-white">Resend</button>
+        </div>
+      </div>
+
+      <!-- Invite Modal -->
+      <div id="inviteModal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+        <div class="bg-gray-900 border border-gray-700 rounded-2xl p-6 w-full max-w-md mx-4">
+          <h3 class="text-lg font-semibold text-white mb-4">Invite Team Member</h3>
+          <form onsubmit="event.preventDefault(); document.getElementById('inviteModal').classList.add('hidden');">
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-300 mb-1.5">Email Address</label>
+              <input type="email" placeholder="colleague@company.com" class="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-300 mb-1.5">Role</label>
+              <select class="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                <option>Member — Can view and edit projects</option>
+                <option>Admin — Full access including settings</option>
+                <option>Viewer — Read-only access</option>
+              </select>
+            </div>
+            <div class="flex gap-3 mt-6">
+              <button type="submit" class="flex-1 rounded-lg bg-brand-600 hover:bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white">Send Invite</button>
+              <button type="button" onclick="document.getElementById('inviteModal').classList.add('hidden')" class="flex-1 rounded-lg border border-gray-700 px-4 py-2.5 text-sm text-gray-300">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

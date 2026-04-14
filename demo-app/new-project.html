@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskFlow — New Project</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { theme: { extend: { colors: { brand: { 50:'#eff6ff',100:'#dbeafe',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',900:'#1e3a5f' }}}}}</script>
+</head>
+<body class="min-h-screen bg-gray-950 text-gray-100">
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-56 bg-gray-900 border-r border-gray-800 p-4 flex flex-col">
+      <h1 class="text-lg font-bold text-white mb-6 px-2">TaskFlow</h1>
+      <nav class="space-y-1 flex-1">
+        <a href="dashboard.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 text-sm">
+          <span>&#9636;</span> Dashboard
+        </a>
+        <a href="new-project.html" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-brand-600/20 text-brand-500 text-sm font-medium">
+          <span>&#43;</span> New Project
+        </a>
+        <a href="team.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 text-sm">
+          <span>&#128101;</span> Team
+        </a>
+        <a href="settings.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 text-sm">
+          <span>&#9881;</span> Settings
+        </a>
+      </nav>
+      <div class="border-t border-gray-800 pt-3 mt-3">
+        <div class="flex items-center gap-3 px-2">
+          <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-xs font-bold">DU</div>
+          <div>
+            <p class="text-sm text-gray-200">Demo User</p>
+            <p class="text-xs text-gray-500">demo@taskflow.io</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 p-8">
+      <div class="max-w-2xl">
+        <h2 class="text-2xl font-bold text-white mb-2">Create New Project</h2>
+        <p class="text-sm text-gray-400 mb-8">Set up a new project to organize your team's work.</p>
+
+        <form onsubmit="event.preventDefault(); window.location.href='project.html';" class="space-y-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1.5">Project Name</label>
+            <input type="text" placeholder="e.g. Website Redesign" class="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1.5">Description</label>
+            <textarea rows="3" placeholder="What is this project about?" class="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1.5">Project Color</label>
+            <div class="flex gap-3">
+              <button type="button" class="w-8 h-8 rounded-full bg-green-500 ring-2 ring-offset-2 ring-offset-gray-950 ring-green-500"></button>
+              <button type="button" class="w-8 h-8 rounded-full bg-blue-500 hover:ring-2 hover:ring-offset-2 hover:ring-offset-gray-950 hover:ring-blue-500"></button>
+              <button type="button" class="w-8 h-8 rounded-full bg-purple-500 hover:ring-2 hover:ring-offset-2 hover:ring-offset-gray-950 hover:ring-purple-500"></button>
+              <button type="button" class="w-8 h-8 rounded-full bg-orange-500 hover:ring-2 hover:ring-offset-2 hover:ring-offset-gray-950 hover:ring-orange-500"></button>
+              <button type="button" class="w-8 h-8 rounded-full bg-pink-500 hover:ring-2 hover:ring-offset-2 hover:ring-offset-gray-950 hover:ring-pink-500"></button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1.5">Visibility</label>
+            <select class="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
+              <option>Team — All members can see</option>
+              <option>Private — Only invited members</option>
+              <option>Public — Visible to everyone</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1.5">Invite Members</label>
+            <input type="text" placeholder="Enter email addresses, separated by commas" class="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500">
+            <p class="text-xs text-gray-600 mt-1">You can also add members later from the project settings.</p>
+          </div>
+
+          <div class="flex gap-3 pt-2">
+            <button type="submit" class="rounded-lg bg-brand-600 hover:bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors">
+              Create Project
+            </button>
+            <a href="dashboard.html" class="rounded-lg border border-gray-700 hover:border-gray-500 px-5 py-2.5 text-sm font-medium text-gray-300 transition-colors">
+              Cancel
+            </a>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

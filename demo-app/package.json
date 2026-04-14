@@ -1,0 +1,12 @@
+{
+  "name": "taskflow",
+  "version": "1.0.0",
+  "description": "TaskFlow — Simple project management for teams",
+  "scripts": {
+    "dev": "serve -l 5173 .",
+    "start": "serve -l 5173 ."
+  },
+  "dependencies": {
+    "serve": "^14.0.0"
+  }
+}

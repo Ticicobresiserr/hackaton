@@ -4,11 +4,22 @@ import { addClient, removeClient, broadcast } from './sse.js';
 import { router as uploadRouter } from './routes/upload.js';
 import { router as githubRouter } from './routes/github.js';
 import { router as controlRouter } from './routes/control.js';
+import { router as programRouter } from './routes/program.js';
+import { router as onboardRouter } from './routes/onboard.js';
 
 const app = express();
 const PORT = process.env.SERVER_PORT ?? 3001;
 
 app.use(express.json());
+
+// CORS — allow direct browser connections from Next.js dev server
+app.use((_req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (_req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
 
 // SSE endpoint
 app.get('/api/events', (req, res) => {
@@ -28,6 +39,8 @@ app.get('/api/events', (req, res) => {
 app.use('/api/upload', uploadRouter);
 app.use('/api/github', githubRouter);
 app.use('/api/control', controlRouter);
+app.use('/api/program', programRouter);
+app.use('/api/onboard', onboardRouter);
 
 // Health check
 app.get('/api/health', (_req, res) => res.json({ ok: true }));

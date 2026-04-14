@@ -7,6 +7,7 @@ const STATUS_CONFIG: Record<AppStatus, { label: string; bg: string; dot: string 
   downloading: { label: 'Downloading', bg: 'bg-blue-900', dot: 'bg-blue-400' },
   'setting-up': { label: 'Setting up', bg: 'bg-yellow-900', dot: 'bg-yellow-400' },
   running: { label: 'Running', bg: 'bg-green-900', dot: 'bg-green-400' },
+  analyzing: { label: 'Analyzing', bg: 'bg-purple-900', dot: 'bg-purple-400' },
   error: { label: 'Error', bg: 'bg-red-900', dot: 'bg-red-400' },
 };
 

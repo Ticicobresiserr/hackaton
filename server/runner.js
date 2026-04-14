@@ -1,6 +1,8 @@
 import { spawn } from 'child_process';
 import { broadcast } from './sse.js';
 import { analyzeProject } from './agent.js';
+import { analyzeFlows } from './flowAnalyzer.js';
+import { store } from './store.js';
 import { detectPort, resetPortDetector } from './portDetector.js';
 
 let currentProcess = null;
@@ -86,6 +88,17 @@ export async function runProject(projectDir) {
     broadcast('status', { state: 'error', message: `Failed to start process: ${err.message}` });
     currentProcess = null;
   });
+
+  // Trigger flow analysis in parallel (don't block the runner)
+  store.setProjectDir(workDir);
+  analyzeFlows(workDir)
+    .then((program) => {
+      store.setProgram(program);
+      broadcast('log', { line: 'Flow analysis complete. Onboarding program ready.\n', stream: 'stdout' });
+    })
+    .catch((err) => {
+      broadcast('log', { line: `Flow analysis error: ${err.message}\n`, stream: 'stderr' });
+    });
 }
 
 export function stopProject() {

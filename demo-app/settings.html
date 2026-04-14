@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskFlow — Settings</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { theme: { extend: { colors: { brand: { 50:'#eff6ff',100:'#dbeafe',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',900:'#1e3a5f' }}}}}</script>
+</head>
+<body class="min-h-screen bg-gray-950 text-gray-100">
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-56 bg-gray-900 border-r border-gray-800 p-4 flex flex-col">
+      <h1 class="text-lg font-bold text-white mb-6 px-2">TaskFlow</h1>
+      <nav class="space-y-1 flex-1">
+        <a href="dashboard.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 text-sm">
+          <span>&#9636;</span> Dashboard
+        </a>
+        <a href="new-project.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 text-sm">
+          <span>&#43;</span> New Project
+        </a>
+        <a href="team.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 text-sm">
+          <span>&#128101;</span> Team
+        </a>
+        <a href="settings.html" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-brand-600/20 text-brand-500 text-sm font-medium">
+          <span>&#9881;</span> Settings
+        </a>
+      </nav>
+      <div class="border-t border-gray-800 pt-3 mt-3">
+        <div class="flex items-center gap-3 px-2">
+          <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-xs font-bold">DU</div>
+          <div>
+            <p class="text-sm text-gray-200">Demo User</p>
+            <p class="text-xs text-gray-500">demo@taskflow.io</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 p-8">
+      <h2 class="text-2xl font-bold text-white mb-2">Settings</h2>
+      <p class="text-sm text-gray-400 mb-8">Manage your account and workspace preferences.</p>
+
+      <div class="max-w-2xl space-y-8">
+        <!-- Profile -->
+        <section>
+          <h3 class="text-lg font-semibold text-white mb-4">Profile</h3>
+          <div class="space-y-4 rounded-xl border border-gray-800 bg-gray-900/50 p-6">
+            <div class="flex items-center gap-4 mb-4">
+              <div class="w-16 h-16 rounded-full bg-brand-600 flex items-center justify-center text-xl font-bold">DU</div>
+              <button class="text-sm text-brand-500 hover:underline">Change avatar</button>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-1.5">Full Name</label>
+              <input type="text" value="Demo User" class="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-1.5">Email</label>
+              <input type="email" value="demo@taskflow.io" class="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+            <button class="rounded-lg bg-brand-600 hover:bg-brand-500 px-4 py-2 text-sm font-semibold text-white transition-colors">
+              Save Changes
+            </button>
+          </div>
+        </section>
+
+        <!-- Notifications -->
+        <section>
+          <h3 class="text-lg font-semibold text-white mb-4">Notifications</h3>
+          <div class="space-y-3 rounded-xl border border-gray-800 bg-gray-900/50 p-6">
+            <label class="flex items-center justify-between cursor-pointer">
+              <div>
+                <p class="text-sm text-gray-200">Email notifications</p>
+                <p class="text-xs text-gray-500">Receive email updates for task assignments</p>
+              </div>
+              <div class="w-10 h-6 rounded-full bg-brand-600 relative cursor-pointer">
+                <div class="absolute right-0.5 top-0.5 w-5 h-5 rounded-full bg-white"></div>
+              </div>
+            </label>
+            <label class="flex items-center justify-between cursor-pointer">
+              <div>
+                <p class="text-sm text-gray-200">Push notifications</p>
+                <p class="text-xs text-gray-500">Get browser push notifications for mentions</p>
+              </div>
+              <div class="w-10 h-6 rounded-full bg-gray-700 relative cursor-pointer">
+                <div class="absolute left-0.5 top-0.5 w-5 h-5 rounded-full bg-gray-400"></div>
+              </div>
+            </label>
+            <label class="flex items-center justify-between cursor-pointer">
+              <div>
+                <p class="text-sm text-gray-200">Weekly digest</p>
+                <p class="text-xs text-gray-500">Summary of your team's activity each week</p>
+              </div>
+              <div class="w-10 h-6 rounded-full bg-brand-600 relative cursor-pointer">
+                <div class="absolute right-0.5 top-0.5 w-5 h-5 rounded-full bg-white"></div>
+              </div>
+            </label>
+          </div>
+        </section>
+
+        <!-- Workspace -->
+        <section>
+          <h3 class="text-lg font-semibold text-white mb-4">Workspace</h3>
+          <div class="space-y-4 rounded-xl border border-gray-800 bg-gray-900/50 p-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-1.5">Workspace Name</label>
+              <input type="text" value="Acme Corp" class="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-1.5">Default Project Visibility</label>
+              <select class="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                <option selected>Team — All members can see</option>
+                <option>Private — Only invited members</option>
+              </select>
+            </div>
+            <button class="rounded-lg bg-brand-600 hover:bg-brand-500 px-4 py-2 text-sm font-semibold text-white transition-colors">
+              Save Changes
+            </button>
+          </div>
+        </section>
+
+        <!-- Danger zone -->
+        <section>
+          <h3 class="text-lg font-semibold text-red-400 mb-4">Danger Zone</h3>
+          <div class="rounded-xl border border-red-900/50 bg-red-950/20 p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-gray-200 font-medium">Delete Workspace</p>
+                <p class="text-xs text-gray-500">Permanently delete this workspace and all its data.</p>
+              </div>
+              <button class="rounded-lg bg-red-900 hover:bg-red-700 px-4 py-2 text-sm font-medium text-red-200 transition-colors">
+                Delete
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskFlow — Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { theme: { extend: { colors: { brand: { 50:'#eff6ff',100:'#dbeafe',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',900:'#1e3a5f' }}}}}</script>
+</head>
+<body class="min-h-screen bg-gray-950 text-gray-100">
+  <!-- Sidebar -->
+  <div class="flex min-h-screen">
+    <aside class="w-56 bg-gray-900 border-r border-gray-800 p-4 flex flex-col">
+      <h1 class="text-lg font-bold text-white mb-6 px-2">TaskFlow</h1>
+      <nav class="space-y-1 flex-1">
+        <a href="dashboard.html" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-brand-600/20 text-brand-500 text-sm font-medium">
+          <span>&#9636;</span> Dashboard
+        </a>
+        <a href="new-project.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 text-sm">
+          <span>&#43;</span> New Project
+        </a>
+        <a href="team.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 text-sm">
+          <span>&#128101;</span> Team
+        </a>
+        <a href="settings.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 text-sm">
+          <span>&#9881;</span> Settings
+        </a>
+      </nav>
+      <div class="border-t border-gray-800 pt-3 mt-3">
+        <div class="flex items-center gap-3 px-2">
+          <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-xs font-bold">DU</div>
+          <div>
+            <p class="text-sm text-gray-200">Demo User</p>
+            <p class="text-xs text-gray-500">demo@taskflow.io</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 p-8">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h2 class="text-2xl font-bold text-white">Projects</h2>
+          <p class="text-sm text-gray-400 mt-1">Manage your team's work in one place</p>
+        </div>
+        <a href="new-project.html" class="rounded-lg bg-brand-600 hover:bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors">
+          + New Project
+        </a>
+      </div>
+
+      <!-- Project cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <a href="project.html" class="block rounded-xl border border-gray-800 bg-gray-900/50 p-5 hover:border-gray-600 transition-colors">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="w-3 h-3 rounded-full bg-green-500"></span>
+            <h3 class="font-semibold text-white">Website Redesign</h3>
+          </div>
+          <p class="text-sm text-gray-400 mb-4">Complete overhaul of the marketing website with new branding.</p>
+          <div class="flex items-center justify-between text-xs text-gray-500">
+            <span>12 tasks</span>
+            <span>3 members</span>
+          </div>
+          <div class="mt-3 w-full bg-gray-800 rounded-full h-1.5">
+            <div class="bg-green-500 h-1.5 rounded-full" style="width: 65%"></div>
+          </div>
+        </a>
+
+        <a href="project.html" class="block rounded-xl border border-gray-800 bg-gray-900/50 p-5 hover:border-gray-600 transition-colors">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="w-3 h-3 rounded-full bg-blue-500"></span>
+            <h3 class="font-semibold text-white">Mobile App v2</h3>
+          </div>
+          <p class="text-sm text-gray-400 mb-4">Version 2.0 of the mobile application with new features.</p>
+          <div class="flex items-center justify-between text-xs text-gray-500">
+            <span>24 tasks</span>
+            <span>5 members</span>
+          </div>
+          <div class="mt-3 w-full bg-gray-800 rounded-full h-1.5">
+            <div class="bg-blue-500 h-1.5 rounded-full" style="width: 30%"></div>
+          </div>
+        </a>
+
+        <a href="project.html" class="block rounded-xl border border-gray-800 bg-gray-900/50 p-5 hover:border-gray-600 transition-colors">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="w-3 h-3 rounded-full bg-purple-500"></span>
+            <h3 class="font-semibold text-white">API Integration</h3>
+          </div>
+          <p class="text-sm text-gray-400 mb-4">Third-party API integrations for the payment system.</p>
+          <div class="flex items-center justify-between text-xs text-gray-500">
+            <span>8 tasks</span>
+            <span>2 members</span>
+          </div>
+          <div class="mt-3 w-full bg-gray-800 rounded-full h-1.5">
+            <div class="bg-purple-500 h-1.5 rounded-full" style="width: 90%"></div>
+          </div>
+        </a>
+      </div>
+
+      <!-- Recent activity -->
+      <div class="mt-8">
+        <h3 class="text-lg font-semibold text-white mb-4">Recent Activity</h3>
+        <div class="space-y-3">
+          <div class="flex items-center gap-3 text-sm">
+            <div class="w-6 h-6 rounded-full bg-green-900 flex items-center justify-center text-xs text-green-300">A</div>
+            <span class="text-gray-300">Alice completed <strong class="text-white">Update landing page copy</strong></span>
+            <span class="text-gray-600 ml-auto">2m ago</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm">
+            <div class="w-6 h-6 rounded-full bg-blue-900 flex items-center justify-center text-xs text-blue-300">B</div>
+            <span class="text-gray-300">Bob created task <strong class="text-white">Setup CI/CD pipeline</strong></span>
+            <span class="text-gray-600 ml-auto">15m ago</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm">
+            <div class="w-6 h-6 rounded-full bg-purple-900 flex items-center justify-center text-xs text-purple-300">C</div>
+            <span class="text-gray-300">Carol commented on <strong class="text-white">Payment gateway integration</strong></span>
+            <span class="text-gray-600 ml-auto">1h ago</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
