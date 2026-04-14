@@ -1,14 +1,31 @@
 (function () {
   const SHERPA_API = window.SHERPA_API || 'http://localhost:3001';
-  const sessionId = 'session_' + Date.now();
-  let userName = '';
-  let messages = [];
+  const STORAGE_KEY = 'sherpa_widget_state';
+
+  // Restore persisted state
+  function loadState() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    } catch { return {}; }
+  }
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        sessionId, userName, messages, progress, started, isOpen,
+      }));
+    } catch {}
+  }
+
+  const saved = loadState();
+  const sessionId = saved.sessionId || 'session_' + Date.now();
+  let userName = saved.userName || '';
+  let messages = saved.messages || [];
   let streaming = false;
-  let progress = null;
-  let started = false;
+  let progress = saved.progress || null;
+  let started = saved.started || false;
   let program = null;
   let published = false;
-  let isOpen = false;
+  let isOpen = saved.isOpen || false;
   let analyzing = false;
 
   // Fetch program on load
@@ -254,7 +271,7 @@
   const btn = document.createElement('button');
   btn.id = 'sherpa-widget-btn';
   btn.innerHTML = mountainSvg;
-  btn.onclick = () => { isOpen = !isOpen; panel.classList.toggle('open', isOpen); };
+  btn.onclick = () => { isOpen = !isOpen; panel.classList.toggle('open', isOpen); saveState(); };
   document.body.appendChild(btn);
 
   // === PANEL ===
@@ -422,33 +439,137 @@
   function startOnboarding() {
     if (!userName.trim()) return;
     started = true;
+    saveState();
     render();
     sendMessage(`Hi, I'm ${userName.trim()}. I'm ready to start the onboarding.`);
   }
 
+  // ── EVENT CAPTURE (ported from copilot/src/listeners.js) ──
+  const eventBuffer = [];
+  let lastCapturedUrl = location.href;
+
+  // SPA navigation hooks
+  const origPush = history.pushState;
+  const origReplace = history.replaceState;
+  history.pushState = function() {
+    origPush.apply(this, arguments);
+    eventBuffer.push({ type: 'navigate', url: location.href, ts: Date.now() });
+  };
+  history.replaceState = function() {
+    origReplace.apply(this, arguments);
+    eventBuffer.push({ type: 'navigate', url: location.href, ts: Date.now() });
+  };
+  window.addEventListener('popstate', () => {
+    eventBuffer.push({ type: 'navigate', url: location.href, ts: Date.now() });
+  });
+
+  // URL polling fallback
+  setInterval(() => {
+    if (location.href !== lastCapturedUrl) {
+      eventBuffer.push({ type: 'navigate', url: location.href, ts: Date.now() });
+      lastCapturedUrl = location.href;
+    }
+  }, 1000);
+
+  // Debounce for auto-send — don't flood the API
+  let autoSendTimer = null;
+  function scheduleAutoSend() {
+    if (!started || streaming || !published) return;
+    clearTimeout(autoSendTimer);
+    autoSendTimer = setTimeout(() => {
+      if (!started || streaming) return;
+      // Auto-send a silent context update — the AI sees what happened
+      sendMessage('[USER_ACTION]');
+    }, 1500); // Wait 1.5s after last action to batch clicks
+  }
+
+  // Capture ALL clicks on interactive elements
+  document.addEventListener('click', (e) => {
+    const el = e.target;
+    // Ignore clicks inside the widget itself
+    if (el.closest('#sherpa-widget-panel') || el.closest('#sherpa-widget-btn')) return;
+    const interactive = el.closest('button, a, [role="button"], input[type="submit"], [data-testid], [role="menuitem"], [role="link"], [role="tab"], select, .task-card, [class*="card"], [onclick]');
+    const target = interactive || el;
+    const text = target.textContent?.slice(0, 80)?.trim() || '';
+    const tag = target.tagName || 'UNKNOWN';
+    const href = target.getAttribute?.('href') || '';
+    const classes = target.className?.toString?.().slice(0, 100) || '';
+    eventBuffer.push({ type: 'click', tag, text, href, classes, ts: Date.now() });
+    scheduleAutoSend();
+  }, true);
+
+  // Capture form submissions
+  document.addEventListener('submit', (e) => {
+    const inputs = [...e.target.querySelectorAll('input,select,textarea')].map(i => ({
+      name: i.name || i.placeholder || i.type,
+      value: i.type === 'password' ? '***' : i.value?.slice(0, 50),
+    }));
+    eventBuffer.push({ type: 'submit', action: e.target.action, inputs, ts: Date.now() });
+    scheduleAutoSend();
+  }, true);
+
+  // Capture input changes (for dropdowns, text fields)
+  document.addEventListener('change', (e) => {
+    const el = e.target;
+    if (el.tagName === 'SELECT' || el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+      eventBuffer.push({
+        type: 'input_change',
+        tag: el.tagName,
+        name: el.name || el.placeholder || el.type,
+        value: el.type === 'password' ? '***' : el.value?.slice(0, 50),
+        ts: Date.now(),
+      });
+    }
+  }, true);
+
+  function drainEvents() {
+    const events = eventBuffer.splice(0);
+    return events;
+  }
+
+  // ── PAGE CONTEXT (enhanced DOM snapshot) ──
   function getPageContext() {
     const title = document.title || '';
     const headings = [...document.querySelectorAll('h1,h2,h3')].slice(0, 10).map(h => h.textContent.trim()).filter(Boolean);
-    const buttons = [...document.querySelectorAll('button,a[class*="bg-"]')].slice(0, 15).map(b => b.textContent.trim()).filter(t => t && t.length < 50);
-    const inputs = [...document.querySelectorAll('input,select,textarea')].slice(0, 10).map(i => i.placeholder || i.name || i.type).filter(Boolean);
-    const navLinks = [...document.querySelectorAll('nav a, aside a')].map(a => a.textContent.trim()).filter(Boolean);
-    return { title, headings, buttons, inputs, navLinks, url: window.location.href };
+    const buttons = [...document.querySelectorAll('button,a[class*="bg-"],a[href]')].slice(0, 20).map(b => {
+      const text = b.textContent.trim().slice(0, 50);
+      const href = b.getAttribute('href') || '';
+      return text ? (href ? `${text} (→${href})` : text) : null;
+    }).filter(Boolean);
+    const inputs = [...document.querySelectorAll('input,select,textarea')].slice(0, 10).map(i => {
+      const label = i.closest('label')?.textContent?.trim()?.slice(0, 30) || '';
+      return `${i.tagName.toLowerCase()}[${i.name || i.placeholder || i.type}]${label ? ' "' + label + '"' : ''}${i.value ? ' = "' + i.value.slice(0, 30) + '"' : ''}`;
+    });
+    const navLinks = [...document.querySelectorAll('nav a, aside a')].map(a => {
+      const active = a.classList.contains('active') || a.closest('[class*="active"]') || a.closest('[class*="brand-600"]');
+      return a.textContent.trim() + (active ? ' (ACTIVE)' : '');
+    }).filter(Boolean);
+
+    // Visible text content summary (main area only, skip nav/aside)
+    const mainEl = document.querySelector('main') || document.querySelector('[class*="flex-1"]') || document.body;
+    const visibleText = mainEl?.innerText?.slice(0, 500) || '';
+
+    return { title, headings, buttons, inputs, navLinks, visibleText, url: window.location.href };
   }
 
   async function sendMessage(text) {
     if (streaming) return;
-    messages.push({ role: 'user', content: text });
+    const isAutoAction = text === '[USER_ACTION]';
+    if (!isAutoAction) {
+      messages.push({ role: 'user', content: text });
+    }
     messages.push({ role: 'assistant', content: '' });
     streaming = true;
     render();
 
     const pageContext = getPageContext();
+    const recentEvents = drainEvents();
 
     try {
       const res = await fetch(SHERPA_API + '/api/onboard/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, userName, message: text, currentUrl: window.location.href, pageContext }),
+        body: JSON.stringify({ sessionId, userName, message: text, currentUrl: window.location.href, pageContext, userEvents: recentEvents }),
       });
 
       const reader = res.body.getReader();
@@ -488,9 +609,11 @@
     }
 
     streaming = false;
+    saveState();
     render();
   }
 
-  // Initial render
+  // Initial render — restore open state
+  if (isOpen) panel.classList.add('open');
   render();
 })();

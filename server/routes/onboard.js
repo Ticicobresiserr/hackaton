@@ -12,7 +12,7 @@ router.get('/sessions', (_req, res) => {
 
 // Chat endpoint for onboarding
 router.post('/chat', async (req, res) => {
-  const { sessionId, userName, message, currentUrl, pageContext } = req.body;
+  const { sessionId, userName, message, currentUrl, pageContext, userEvents } = req.body;
 
   const program = store.getProgram();
   if (!program) {
@@ -82,14 +82,26 @@ PROGRESS:
 
 ${allFlowsDone ? '' : `CURRENT STEP:\n${JSON.stringify(currentStep, null, 2)}`}
 
-WHAT THE USER SEES RIGHT NOW (live DOM context):
+WHAT THE USER SEES RIGHT NOW (live DOM snapshot):
 ${pageContext ? `- Page title: ${pageContext.title}
-- Headings on screen: ${(pageContext.headings || []).join(', ') || 'none'}
+- Headings visible: ${(pageContext.headings || []).join(', ') || 'none'}
 - Buttons/links visible: ${(pageContext.buttons || []).join(', ') || 'none'}
 - Input fields: ${(pageContext.inputs || []).join(', ') || 'none'}
-- Navigation links: ${(pageContext.navLinks || []).join(', ') || 'none'}` : '(no page context available)'}
+- Sidebar nav: ${(pageContext.navLinks || []).join(', ') || 'none'}
+- Main content: ${pageContext.visibleText?.slice(0, 400) || '(empty)'}` : '(no page context)'}
 
-IMPORTANT: Use the DOM context above to give ACCURATE instructions. Reference the ACTUAL buttons, headings, and elements the user can see — not generic descriptions.
+RECENT USER ACTIONS (captured from DOM events):
+${userEvents && userEvents.length > 0 ? userEvents.slice(-15).map(e => {
+  if (e.type === 'click') return `- Clicked: "${e.text}" (${e.tag}${e.href ? ', href=' + e.href : ''})`;
+  if (e.type === 'navigate') return `- Navigated to: ${e.url}`;
+  if (e.type === 'submit') return `- Submitted form${e.inputs ? ' with: ' + e.inputs.map(i => i.name + '=' + i.value).join(', ') : ''}`;
+  if (e.type === 'input_change') return `- Changed ${e.name} to "${e.value}"`;
+  return `- ${e.type}`;
+}).join('\n') : '(no recent actions)'}
+
+CRITICAL: Use the DOM snapshot and user actions above to give ACCURATE instructions. Reference ACTUAL buttons, headings, and elements the user can see. If the user just clicked something, acknowledge it. If they navigated to a new page, orient them to what's NOW on screen.
+
+AUTOMATIC UPDATES: If the user's message is "[USER_ACTION]", it means the widget auto-detected the user did something (clicked, navigated, submitted a form). Look at RECENT USER ACTIONS to see what they did. Respond naturally — acknowledge what they did, check if it completes the current step, and guide them to the next action. Do NOT say "I see you sent an action" — just react to what they did as if you're watching them.
 
 RULES:
 1. ONE step at a time. Never skip ahead.
